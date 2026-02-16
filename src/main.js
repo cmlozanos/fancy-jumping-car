@@ -11,6 +11,13 @@ const finishRestart = document.getElementById("finish-restart");
 const carColorInput = document.getElementById("car-color");
 const controlButtons = document.querySelectorAll(".control-btn");
 
+const savedCarColor = (() => {
+  const raw = window.localStorage.getItem("carColor");
+  if (!raw) return "#ff2d2d";
+  if (!/^#[0-9a-fA-F]{6}$/.test(raw)) return "#ff2d2d";
+  return raw;
+})();
+
 const state = {
   running: true,
   time: 0,
@@ -21,7 +28,7 @@ const state = {
   progress: 0,
   jumpY: 0,
   jumpVel: 0,
-  carColor: new THREE.Color("#ff2d2d"),
+  carColor: new THREE.Color(savedCarColor),
   checkpoints: [0.25, 0.5, 0.75],
   checkpointIndex: 0,
   finished: false,
@@ -82,6 +89,7 @@ car.position.y = 0.05;
 scene.add(car);
 loadCarModel(car, fallbackCar.root);
 applyCarColor(state.carColor);
+if (carColorInput) carColorInput.value = savedCarColor;
 
 const checkpoints = buildCheckpoints(track);
 checkpoints.forEach((gate) => scene.add(gate));
@@ -779,11 +787,11 @@ function buildObstacles(trackData) {
 }
 
 function buildRamps(trackData, obstaclesList) {
-  const rampWidth = 3.2;
-  const rampLength = 4.8;
-  const rampHeight = 1.1;
-  const rampAngle = Math.atan2(rampHeight, rampLength);
-  const material = new THREE.MeshStandardMaterial({ color: 0x2f2f2f, roughness: 0.8 });
+  const rampFrontWidth = 1.2;
+  const rampBackWidth = 3.0;
+  const rampLength = 4.4;
+  const rampHeight = 2.6;
+  const material = new THREE.MeshStandardMaterial({ color: 0x9a7b4f, roughness: 0.95 });
 
   return obstaclesList
     .filter((obstacle) => obstacle.ramp)
@@ -794,15 +802,14 @@ function buildRamps(trackData, obstaclesList) {
       const left = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
 
       const mesh = new THREE.Mesh(
-        new THREE.BoxGeometry(rampWidth, rampHeight, rampLength),
+        buildRampGeometry(rampFrontWidth, rampBackWidth, rampLength, rampHeight),
         material
       );
-      mesh.rotation.x = -rampAngle;
       mesh.position.copy(center).addScaledVector(left, obstacle.lateral);
-      mesh.position.y = rampHeight * 0.5;
+      mesh.position.y = 0;
       mesh.rotation.y = Math.atan2(tangent.x, tangent.z);
 
-      const lateralHalf = rampWidth * 0.5;
+      const lateralHalf = rampBackWidth * 0.5;
       const progressHalf = (rampLength * 0.5) / trackData.total;
 
       return {
@@ -812,8 +819,43 @@ function buildRamps(trackData, obstaclesList) {
         lateralHalf,
         progressHalf,
         height: rampHeight,
+        frontWidth: rampFrontWidth,
+        backWidth: rampBackWidth,
+        length: rampLength,
       };
     });
+}
+
+function buildRampGeometry(frontWidth, backWidth, length, height) {
+  const halfLen = length * 0.5;
+  const halfFront = frontWidth * 0.5;
+  const halfBack = backWidth * 0.5;
+
+  const vertices = new Float32Array([
+    -halfFront, 0, -halfLen,
+    halfFront, 0, -halfLen,
+    halfBack, 0, halfLen,
+    -halfBack, 0, halfLen,
+    -halfFront, 0, -halfLen,
+    halfFront, 0, -halfLen,
+    halfBack, height, halfLen,
+    -halfBack, height, halfLen,
+  ]);
+
+  const indices = [
+    0, 1, 2, 0, 2, 3,
+    4, 7, 6, 4, 6, 5,
+    0, 4, 5, 0, 5, 1,
+    1, 5, 6, 1, 6, 2,
+    2, 6, 7, 2, 7, 3,
+    3, 7, 4, 3, 4, 0,
+  ];
+
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.BufferAttribute(vertices, 3));
+  geometry.setIndex(indices);
+  geometry.computeVertexNormals();
+  return geometry;
 }
 
 function buildTrees(trackData) {
@@ -911,8 +953,8 @@ function updateCar(delta) {
   const accel = 22;
   const reverseAccel = 18;
   const drag = 0.975;
-  const maxSpeed = 48;
-  const maxReverse = 22;
+  const maxSpeed = 41.7;
+  const maxReverse = 41.7;
   const steerForce = 14;
   const driftDrag = 2.4;
   const curveForce = 0.0022;
@@ -959,18 +1001,32 @@ function updateCar(delta) {
   const carHalfZ = 2.0;
   const carProgressHalf = carHalfZ / track.total;
 
+  let rampLift = 0;
   ramps.forEach((ramp) => {
+    const dz = state.progress - ramp.t;
+    const rampSpan = ramp.progressHalf * 2;
+    const frac = dz / rampSpan + 0.5;
+    if (frac < 0 || frac > 1) return;
+
+    const widthAt = ramp.frontWidth + (ramp.backWidth - ramp.frontWidth) * frac;
     const dx = Math.abs(state.lateral - ramp.lateral);
-    const dz = Math.abs(state.progress - ramp.t);
-    if (dx < carHalfX + ramp.lateralHalf && dz < carProgressHalf + ramp.progressHalf) {
-      if (state.jumpY <= 0.02 && state.speed > 4) {
-        state.jumpVel = Math.max(state.jumpVel, Math.abs(state.speed) * 0.16 + 5.2);
-      }
+    if (dx > carHalfX + widthAt * 0.5) return;
+
+    const heightAt = ramp.height * frac;
+    rampLift = Math.max(rampLift, heightAt);
+
+    if (frac > 0.9 && state.jumpY <= ramp.height * 0.9 && state.speed > 4) {
+      state.jumpVel = Math.max(state.jumpVel, Math.abs(state.speed) * 0.22 + 6.4);
     }
   });
 
-  state.jumpVel += gravity * delta;
-  state.jumpY += state.jumpVel * delta;
+  if (rampLift > 0) {
+    state.jumpY = Math.max(state.jumpY, rampLift);
+    state.jumpVel = Math.max(0, state.jumpVel);
+  } else {
+    state.jumpVel += gravity * delta;
+    state.jumpY += state.jumpVel * delta;
+  }
   if (state.jumpY < 0) {
     state.jumpY = 0;
     state.jumpVel = 0;
@@ -1121,6 +1177,7 @@ function bindColorPicker() {
     const nextColor = new THREE.Color(event.target.value);
     state.carColor = nextColor;
     applyCarColor(nextColor);
+    window.localStorage.setItem("carColor", event.target.value);
   });
 }
 
