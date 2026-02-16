@@ -1,0 +1,217 @@
+@import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap");
+
+:root {
+  --bg: #0b0f1a;
+  --panel: #151a28;
+  --panel-border: #2b3248;
+  --text: #f3f5ff;
+  --accent: #ffcc66;
+  --accent-2: #6fd3ff;
+  --danger: #ff6b6b;
+}
+
+* {
+  box-sizing: border-box;
+  font-family: "Press Start 2P", monospace;
+}
+
+body {
+  margin: 0;
+  background: radial-gradient(circle at 20% 20%, #1c2440 0%, #0b0f1a 45%, #05070c 100%);
+  color: var(--text);
+}
+
+#app {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+@media (orientation: portrait) {
+  #app::after {
+    content: "Gira el telefono a horizontal";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(5, 7, 12, 0.9);
+    color: var(--text);
+    font-size: 14px;
+    z-index: 5;
+  }
+}
+
+#game {
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: #0b0f1a;
+}
+
+#ui {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.hidden {
+  display: none;
+}
+
+#hud {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  padding: 4px 6px;
+  background: transparent;
+  border: none;
+  pointer-events: auto;
+  z-index: 2;
+}
+
+.hud-item {
+  font-size: 10px;
+  margin: 3px 0;
+}
+
+.panel {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(520px, 90vw);
+  padding: 20px;
+  background: var(--panel);
+  border: 3px solid var(--panel-border);
+  text-align: center;
+  pointer-events: auto;
+}
+
+.panel h1 {
+  font-size: 18px;
+  margin: 0 0 12px;
+}
+
+.panel p {
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.level-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.level-list button {
+  padding: 12px;
+  font-size: 12px;
+}
+
+.row {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+button {
+  border: 2px solid var(--panel-border);
+  background: #0f1321;
+  color: var(--text);
+  padding: 10px 14px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+button.primary {
+  background: var(--accent);
+  color: #111;
+  border-color: #c79b3c;
+}
+
+#controls {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 14px;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 18px;
+  pointer-events: auto;
+  z-index: 2;
+}
+
+.control-btn {
+  width: 84px;
+  height: 84px;
+  border-radius: 16px;
+  border: 3px solid #2b3248;
+  background-color: #1b2238;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 64px;
+  opacity: 0.9;
+}
+
+.control-btn.left {
+  background-image: url("assets/sprites/ui_button_left.svg");
+}
+
+.control-btn.right {
+  background-image: url("assets/sprites/ui_button_right.svg");
+}
+
+.control-btn.action {
+  background-image: url("assets/sprites/ui_button_action.svg");
+}
+
+.control-btn.reverse {
+  background-image: url("assets/sprites/ui_button_action.svg");
+  filter: grayscale(1) brightness(0.9);
+  position: relative;
+}
+
+.control-btn.reverse::after {
+  content: "R";
+  color: #111;
+  font-size: 18px;
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.control-btn.active {
+  transform: translateY(2px) scale(0.98);
+  filter: brightness(1.2);
+}
+
+@media (min-width: 900px) {
+  #controls {
+    max-width: 760px;
+    margin: 0 auto;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 520px) {
+  #controls {
+    bottom: 8px;
+    padding: 0 12px;
+  }
+
+  .control-btn {
+    width: 72px;
+    height: 72px;
+    background-size: 56px;
+  }
+
+  #hud {
+    top: 8px;
+    left: 8px;
+  }
+}

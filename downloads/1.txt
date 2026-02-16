@@ -1,0 +1,11 @@
+
+
+
+{
+ "resultCount":1,
+ "results": [
+{"wrapperType":"track", "kind":"song", "artistId":2419084, "collectionId":1534657435, "trackId":1534657558, "artistName":"Kinky", "collectionName":"Mtv Unplugged (Track by Track Commentary)", "trackName":"Negro Día (Mtv Unplugged (Track By Track Commentary))", "collectionCensoredName":"Mtv Unplugged (Track by Track Commentary)", "trackCensoredName":"Negro Día (Mtv Unplugged (Track By Track Commentary))", "artistViewUrl":"https://music.apple.com/us/artist/kinky/2419084?uo=4", "collectionViewUrl":"https://music.apple.com/us/album/negro-d%C3%ADa-mtv-unplugged-track-by-track-commentary/1534657435?i=1534657558&uo=4", "trackViewUrl":"https://music.apple.com/us/album/negro-d%C3%ADa-mtv-unplugged-track-by-track-commentary/1534657435?i=1534657558&uo=4", 
+"previewUrl":"https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview114/v4/37/18/4d/37184dfd-fb0a-6485-c02e-be9e7c33b05d/mzaf_15170474471624909997.plus.aac.p.m4a", "artworkUrl30":"https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/f5/fb/ae/f5fbae94-4a40-23de-32e1-4f7ae956ae00/195497334155.jpg/30x30bb.jpg", "artworkUrl60":"https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/f5/fb/ae/f5fbae94-4a40-23de-32e1-4f7ae956ae00/195497334155.jpg/60x60bb.jpg", "artworkUrl100":"https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/f5/fb/ae/f5fbae94-4a40-23de-32e1-4f7ae956ae00/195497334155.jpg/100x100bb.jpg", "collectionPrice":9.99, "trackPrice":0.99, "releaseDate":"2014-11-11T12:00:00Z", "collectionExplicitness":"notExplicit", "trackExplicitness":"notExplicit", "discCount":1, "discNumber":1, "trackCount":13, "trackNumber":7, "trackTimeMillis":58267, "country":"USA", "currency":"USD", "primaryGenreName":"Rock", "isStreamable":true}]
+}
+
+
