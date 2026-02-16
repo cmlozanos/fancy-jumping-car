@@ -92,14 +92,14 @@ scene.add(startLine);
 
 const obstacles = buildObstacles(track);
 obstacles.forEach((obstacle) => scene.add(obstacle.mesh));
-loadRockModel(obstacles);
+loadRockModels(obstacles);
 
 const clock = new THREE.Clock();
 
 function buildTrack(texture) {
   const length = 800;
   const segments = 200;
-  const halfWidth = 6;
+  const halfWidth = 9;
   const tailLength = 140;
   const points = [];
   const distances = [];
@@ -295,9 +295,9 @@ function buildCar() {
   });
 
 
-  group.scale.set(0.7, 0.7, 0.7);
+  group.scale.set(0.85, 0.85, 0.85);
 
-  return { root: group, wheels, wheelRadius: 0.7, bodyMaterials: [bodyMaterial] };
+  return { root: group, wheels, wheelRadius: 0.85, bodyMaterials: [bodyMaterial] };
 }
 
 function loadCarModel(parent, fallbackRoot) {
@@ -358,28 +358,41 @@ function loadCarModel(parent, fallbackRoot) {
   );
 }
 
-function loadRockModel(obstaclesList) {
+function loadRockModels(obstaclesList) {
   const loader = new GLTFLoader();
-  loader.load(
-    "assets/models/Rock.glb",
-    (gltf) => {
-      const source = gltf.scene;
-      if (!source) return;
-      source.traverse((child) => {
+  const sources = [];
+  const paths = ["assets/models/Rock.glb", "assets/models/Rock_2.glb", "assets/models/Rock_3.glb"];
+  let loaded = 0;
+
+  const onLoaded = (scene) => {
+    if (scene) {
+      scene.traverse((child) => {
         if (child.isMesh) {
           child.castShadow = true;
           child.receiveShadow = true;
         }
       });
-      applyRockToObstacles(obstaclesList, source);
-    },
-    undefined,
-    () => {}
-  );
+      sources.push(scene);
+    }
+    loaded += 1;
+    if (loaded === paths.length && sources.length) {
+      applyRockToObstacles(obstaclesList, sources);
+    }
+  };
+
+  paths.forEach((path) => {
+    loader.load(
+      path,
+      (gltf) => onLoaded(gltf.scene),
+      undefined,
+      () => onLoaded(null)
+    );
+  });
 }
 
-function applyRockToObstacles(obstaclesList, source) {
+function applyRockToObstacles(obstaclesList, sources) {
   obstaclesList.forEach((obstacle) => {
+    const source = sources[Math.floor(Math.random() * sources.length)];
     const rock = source.clone(true);
     const bounds = new THREE.Box3().setFromObject(rock);
     const size = bounds.getSize(new THREE.Vector3());
@@ -666,9 +679,9 @@ function buildObstacles(trackData) {
     const tangent = getTrackTangent(trackData, item.t);
     const left = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
 
-    const width = 1.6;
-    const depth = 1.6;
-    const height = 1.4;
+    const width = 2.4;
+    const depth = 2.4;
+    const height = 2.1;
 
     const group = new THREE.Group();
     const placeholder = new THREE.Mesh(
@@ -744,7 +757,7 @@ function getTrackCurvature(trackData, t) {
 function updateCar(delta) {
   const accel = 22;
   const reverseAccel = 18;
-  const drag = 0.94;
+  const drag = 0.975;
   const maxSpeed = 48;
   const maxReverse = 22;
   const steerForce = 14;
@@ -808,8 +821,8 @@ function updateCar(delta) {
     state.speed *= 0.7;
   }
 
-  const carHalfX = 1.2;
-  const carHalfZ = 1.6;
+  const carHalfX = 1.5;
+  const carHalfZ = 2.0;
   const carProgressHalf = carHalfZ / track.total;
   obstacles.forEach((obstacle) => {
     const dx = Math.abs(state.lateral - obstacle.lateral);
