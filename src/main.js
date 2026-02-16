@@ -15,6 +15,7 @@ const state = {
   speed: 0,
   lateral: 0,
   lateralVel: 0,
+  headingOffset: 0,
   progress: 0,
   checkpoints: [0.25, 0.5, 0.75],
   checkpointIndex: 0,
@@ -71,7 +72,7 @@ car.position.y = 0.7;
 scene.add(car);
 
 const checkpoints = buildCheckpoints(track);
-checkpoints.forEach((ring) => scene.add(ring));
+checkpoints.forEach((gate) => scene.add(gate));
 
 const finishGate = buildFinishGate(track);
 scene.add(finishGate);
@@ -240,19 +241,60 @@ function createTrackTexture() {
 }
 
 function buildCheckpoints(trackData) {
-  const rings = [];
+  const gates = [];
   for (let i = 0; i < state.checkpoints.length; i += 1) {
     const t = state.checkpoints[i];
-    const pos = getTrackPoint(trackData, t);
-    const ring = new THREE.Mesh(
-      new THREE.TorusGeometry(2.2, 0.25, 10, 24),
-      new THREE.MeshStandardMaterial({ color: 0xffcc66 })
-    );
-    ring.position.copy(pos).add(new THREE.Vector3(0, 1.4, 0));
-    ring.rotation.x = Math.PI / 2;
-    rings.push(ring);
+    const gate = buildCheckpointGate(trackData, t);
+    gates.push(gate);
   }
-  return rings;
+  return gates;
+}
+
+function buildCheckpointGate(trackData, t) {
+  const group = new THREE.Group();
+  const postMaterial = new THREE.MeshStandardMaterial({ color: 0x22314f });
+  const bannerMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
+
+  const leftPost = new THREE.Mesh(new THREE.BoxGeometry(0.7, 3.6, 0.7), postMaterial);
+  const rightPost = new THREE.Mesh(new THREE.BoxGeometry(0.7, 3.6, 0.7), postMaterial);
+  const postOffset = trackData.halfWidth + 1.2;
+  const bannerWidth = postOffset * 2 + 1.2;
+  const banner = new THREE.Mesh(new THREE.BoxGeometry(bannerWidth, 1.0, 0.5), bannerMaterial);
+
+  leftPost.position.set(-postOffset, 1.8, 0);
+  rightPost.position.set(postOffset, 1.8, 0);
+  banner.position.set(0, 3.6, 0);
+
+  group.add(leftPost, rightPost, banner);
+
+  const canvas = document.createElement("canvas");
+  canvas.width = 512;
+  canvas.height = 128;
+  const ctx = canvas.getContext("2d");
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "#111111";
+  ctx.font = "bold 54px sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText("CheckPoint", canvas.width / 2, canvas.height / 2);
+
+  const label = new THREE.Mesh(
+    new THREE.PlaneGeometry(bannerWidth, 2.4),
+    new THREE.MeshStandardMaterial({ map: new THREE.CanvasTexture(canvas), color: 0xffffff })
+  );
+  label.position.set(0, 3.6, 0.3);
+  group.add(label);
+
+  const pos = getTrackPoint(trackData, t);
+  const tangent = getTrackTangent(trackData, t);
+  group.position.copy(pos);
+  group.position.y = 0.2;
+  group.rotation.y = Math.atan2(tangent.x, tangent.z);
+
+  group.userData = { banner, label, postMaterial, bannerMaterial, kind: "checkpoint" };
+
+  return group;
 }
 
 function buildFinishGate(trackData) {
@@ -262,26 +304,68 @@ function buildFinishGate(trackData) {
 
   const leftPost = new THREE.Mesh(new THREE.BoxGeometry(0.8, 4.5, 0.8), postMaterial);
   const rightPost = new THREE.Mesh(new THREE.BoxGeometry(0.8, 4.5, 0.8), postMaterial);
-  const banner = new THREE.Mesh(new THREE.BoxGeometry(14.0, 1.4, 0.6), bannerMaterial);
+  const postOffset = trackData.halfWidth + 1.6;
+  const bannerWidth = postOffset * 2 + 1.6;
+  const banner = new THREE.Mesh(new THREE.BoxGeometry(bannerWidth, 1.4, 0.6), bannerMaterial);
   const line = new THREE.Mesh(
-    new THREE.PlaneGeometry(14.5, 2.6),
+    new THREE.PlaneGeometry(bannerWidth + 0.5, 2.6),
     new THREE.MeshStandardMaterial({ color: 0xffffff })
   );
 
-  leftPost.position.set(-3.8, 2.2, 0);
-  leftPost.position.set(-6.2, 2.2, 0);
-  rightPost.position.set(6.2, 2.2, 0);
+  leftPost.position.set(-postOffset, 2.2, 0);
+  rightPost.position.set(postOffset, 2.2, 0);
   banner.position.set(0, 4.8, 0);
   line.rotation.x = -Math.PI / 2;
-  line.position.set(0, 0.02, 0);
+  line.position.set(0, 0.04, 0);
 
   group.add(leftPost, rightPost, banner, line);
+
+    const canvas = document.createElement("canvas");
+    canvas.width = 512;
+    canvas.height = 128;
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#111111";
+    ctx.font = "bold 64px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("FINISH", canvas.width / 2, canvas.height / 2);
+
+    const finishLabel = new THREE.Mesh(
+      new THREE.PlaneGeometry(bannerWidth, 1.4),
+      new THREE.MeshStandardMaterial({ map: new THREE.CanvasTexture(canvas), color: 0xffffff })
+    );
+    finishLabel.position.set(0, 4.8, 0.3);
+    group.add(finishLabel);
+
+    const floorCanvas = document.createElement("canvas");
+    floorCanvas.width = 512;
+    floorCanvas.height = 128;
+    const floorCtx = floorCanvas.getContext("2d");
+    floorCtx.fillStyle = "#ffffff";
+    floorCtx.fillRect(0, 0, floorCanvas.width, floorCanvas.height);
+    floorCtx.fillStyle = "#111111";
+    floorCtx.font = "bold 64px sans-serif";
+    floorCtx.textAlign = "center";
+    floorCtx.textBaseline = "middle";
+    floorCtx.fillText("FINISH", floorCanvas.width / 2, floorCanvas.height / 2);
+
+    const floorLabel = new THREE.Mesh(
+      new THREE.PlaneGeometry(10, 3),
+      new THREE.MeshStandardMaterial({ map: new THREE.CanvasTexture(floorCanvas), color: 0xffffff })
+    );
+    floorLabel.rotation.x = -Math.PI / 2;
+    floorLabel.position.set(0, 0.05, 1.6);
+    group.add(floorLabel);
 
   const pos = getTrackPoint(trackData, 1);
   const tangent = getTrackTangent(trackData, 1);
   group.position.copy(pos);
   group.position.y = 0.2;
   group.rotation.y = Math.atan2(tangent.x, tangent.z);
+
+  group.userData = { banner, finishLabel, postMaterial, bannerMaterial, kind: "finish" };
 
   return group;
 }
@@ -333,14 +417,27 @@ function buildObstacles(trackData) {
     const tangent = getTrackTangent(trackData, item.t);
     const left = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
 
+    const width = 1.6;
+    const depth = 1.6;
+    const height = 1.4;
+
     const mesh = new THREE.Mesh(
-      new THREE.BoxGeometry(1.6, 1.4, 1.6),
+      new THREE.BoxGeometry(width, height, depth),
       new THREE.MeshStandardMaterial({ color: 0xff8c1a })
     );
     mesh.position.copy(center).addScaledVector(left, item.lateral);
     mesh.position.y = 0.75;
 
-    return { mesh, halfX: 0.8, halfZ: 0.8, lateral: item.lateral, t: item.t };
+    const lateralHalf = width * 0.5;
+    const progressHalf = (depth * 0.5) / trackData.total;
+
+    return {
+      mesh,
+      lateralHalf,
+      progressHalf,
+      lateral: item.lateral,
+      t: item.t,
+    };
   });
 }
 
@@ -386,6 +483,8 @@ function updateCar(delta) {
   const steerForce = 14;
   const driftDrag = 2.4;
   const curveForce = 0.0022;
+  const wheelbase = 4.2;
+  const maxSteer = 0.55;
 
   if (input.action && !input.reverse) {
     state.speed = Math.min(maxSpeed, state.speed + accel * delta);
@@ -395,8 +494,12 @@ function updateCar(delta) {
     state.speed *= drag;
   }
 
-  if (input.left) state.lateralVel -= steerForce * delta;
-  if (input.right) state.lateralVel += steerForce * delta;
+  if (Math.abs(state.speed) > 0.5) {
+    if (input.left) state.lateralVel -= steerForce * delta;
+    if (input.right) state.lateralVel += steerForce * delta;
+  } else {
+    state.lateralVel *= 0.6;
+  }
 
   const curvature = getTrackCurvature(track, state.progress);
   state.lateralVel += curvature * state.speed * state.speed * curveForce;
@@ -418,8 +521,9 @@ function updateCar(delta) {
   ground.position.x = car.position.x;
   ground.position.z = car.position.z;
   car.position.y = 0.7;
-  const slip = Math.atan2(state.lateralVel, Math.max(6, state.speed));
-  car.rotation.y = Math.atan2(tangent.x, tangent.z) + slip * 0.35;
+  const baseYaw = Math.atan2(tangent.x, tangent.z);
+  const slip = Math.atan2(state.lateralVel, Math.max(6, Math.abs(state.speed)));
+  car.rotation.y = baseYaw + slip * 0.2;
 
   if (Math.abs(state.lateral) > track.halfWidth - 0.3) {
     state.speed *= 0.7;
@@ -427,13 +531,14 @@ function updateCar(delta) {
 
   const carHalfX = 1.2;
   const carHalfZ = 2.1;
+  const carProgressHalf = carHalfZ / track.total;
   obstacles.forEach((obstacle) => {
-    const dx = Math.abs(car.position.x - obstacle.mesh.position.x);
-    const dz = Math.abs(car.position.z - obstacle.mesh.position.z);
-    if (dx < carHalfX + obstacle.halfX && dz < carHalfZ + obstacle.halfZ) {
-      const pushDir = Math.sign(car.position.x - obstacle.mesh.position.x) || 1;
+    const dx = Math.abs(state.lateral - obstacle.lateral);
+    const dz = Math.abs(state.progress - obstacle.t);
+    if (dx < carHalfX + obstacle.lateralHalf && dz < carProgressHalf + obstacle.progressHalf) {
+      const pushDir = Math.sign(state.lateral - obstacle.lateral) || 1;
       state.lateral += pushDir * 1.4 * delta;
-      state.lateralVel *= -0.4;
+      state.lateralVel *= 0.2;
       state.progress = Math.max(0, state.progress - 0.0015);
       state.speed = Math.min(state.speed, 0);
       state.speed -= 14 * delta;
@@ -460,8 +565,14 @@ function updateCheckpoints(center) {
   if (state.checkpointIndex >= state.checkpoints.length) return;
   const targetT = state.checkpoints[state.checkpointIndex];
   const target = getTrackPoint(track, targetT);
-  if (center.distanceTo(target) < 3.2) {
-    checkpoints[state.checkpointIndex].material.color.set(0x77ff77);
+  if (center.distanceTo(target) < 5.0) {
+    const gate = checkpoints[state.checkpointIndex];
+    if (gate?.userData?.bannerMaterial) {
+      gate.userData.bannerMaterial.color.set(0x77ff77);
+    }
+    if (gate?.userData?.postMaterial) {
+      gate.userData.postMaterial.color.set(0x77ff77);
+    }
     state.checkpointIndex += 1;
   }
   hudCheckpoint.textContent = `${state.checkpointIndex}/${state.checkpoints.length}`;
@@ -473,6 +584,12 @@ function checkFinish() {
     state.finished = true;
     finishTime.textContent = state.time.toFixed(2);
     finishPanel.classList.remove("hidden");
+    if (finishGate?.userData?.bannerMaterial) {
+      finishGate.userData.bannerMaterial.color.set(0x77ff77);
+    }
+    if (finishGate?.userData?.postMaterial) {
+      finishGate.userData.postMaterial.color.set(0x77ff77);
+    }
   }
 }
 
@@ -539,6 +656,7 @@ function resetRun() {
   state.speed = 0;
   state.lateral = 0;
   state.lateralVel = 0;
+  state.headingOffset = 0;
   state.progress = 0;
   state.checkpointIndex = 0;
   state.finished = false;
