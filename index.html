@@ -15,6 +15,10 @@
           <div class="hud-item">Tiempo: <span id="hud-time">0.00</span>s</div>
           <div class="hud-item">Velocidad: <span id="hud-speed">0</span> km/h</div>
           <div class="hud-item">Checkpoint: <span id="hud-checkpoint">0/3</span></div>
+          <label class="color-picker" for="car-color">
+            Color coche
+            <input id="car-color" type="color" value="#ff2d2d" aria-label="Color del coche" />
+          </label>
         </div>
 
         <div id="controls">
@@ -32,6 +36,14 @@
       </div>
     </div>
 
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        }
+      }
+    </script>
     <script type="module" src="src/main.js?v=4"></script>
   </body>
 </html>

@@ -1,4 +1,5 @@
-import * as THREE from "https://unpkg.com/three@0.160.0/build/three.module.js";
+import * as THREE from "three";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
 const container = document.getElementById("game");
 const hudTime = document.getElementById("hud-time");
@@ -7,6 +8,7 @@ const hudCheckpoint = document.getElementById("hud-checkpoint");
 const finishPanel = document.getElementById("finish");
 const finishTime = document.getElementById("finish-time");
 const finishRestart = document.getElementById("finish-restart");
+const carColorInput = document.getElementById("car-color");
 const controlButtons = document.querySelectorAll(".control-btn");
 
 const state = {
@@ -17,6 +19,7 @@ const state = {
   lateralVel: 0,
   headingOffset: 0,
   progress: 0,
+  carColor: new THREE.Color("#ff2d2d"),
   checkpoints: [0.25, 0.5, 0.75],
   checkpointIndex: 0,
   finished: false,
@@ -64,12 +67,19 @@ scene.add(track.mesh);
 scene.add(track.leftEdgeMesh);
 scene.add(track.rightEdgeMesh);
 
-const car = new THREE.Mesh(
-  new THREE.BoxGeometry(2.4, 1.0, 4.2),
-  new THREE.MeshStandardMaterial({ color: 0xff4d4d })
-);
-car.position.y = 0.7;
+const car = new THREE.Group();
+const fallbackCar = buildCar();
+car.add(fallbackCar.root);
+car.userData = {
+  wheels: fallbackCar.wheels,
+  wheelRadius: fallbackCar.wheelRadius,
+  wheelSpin: 0,
+  bodyMaterials: fallbackCar.bodyMaterials,
+};
+car.position.y = 0.05;
 scene.add(car);
+loadCarModel(car, fallbackCar.root);
+applyCarColor(state.carColor);
 
 const checkpoints = buildCheckpoints(track);
 checkpoints.forEach((gate) => scene.add(gate));
@@ -82,6 +92,7 @@ scene.add(startLine);
 
 const obstacles = buildObstacles(track);
 obstacles.forEach((obstacle) => scene.add(obstacle.mesh));
+loadRockModel(obstacles);
 
 const clock = new THREE.Clock();
 
@@ -218,6 +229,218 @@ function buildTrack(texture) {
     length,
     tailLength,
   };
+}
+
+function buildCar() {
+  const group = new THREE.Group();
+
+  const bodyMaterial = new THREE.MeshStandardMaterial({ color: 0xff4d4d, roughness: 0.6, metalness: 0.1 });
+  const darkMaterial = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.8 });
+  const trimMaterial = new THREE.MeshStandardMaterial({ color: 0x3a3a3a, roughness: 0.7, metalness: 0.2 });
+  const glassMaterial = new THREE.MeshStandardMaterial({
+    color: 0x88c8ff,
+    transparent: true,
+    opacity: 0.45,
+    roughness: 0.2,
+    metalness: 0.1,
+  });
+
+  const body = new THREE.Mesh(new THREE.BoxGeometry(3.4, 1.0, 4.6), bodyMaterial);
+  body.position.y = 2.1;
+  group.add(body);
+
+  const cab = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.9, 2.2), bodyMaterial);
+  cab.position.set(0, 2.8, -0.4);
+  group.add(cab);
+
+  const glass = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.7, 2.0), glassMaterial);
+  glass.position.set(0, 2.85, -0.45);
+  group.add(glass);
+
+  const bumper = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.4, 0.6), darkMaterial);
+  bumper.position.set(0, 1.2, 2.5);
+  group.add(bumper);
+
+  const skid = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.3, 2.2), trimMaterial);
+  skid.position.set(0, 1.0, 0.4);
+  group.add(skid);
+
+  const wheelGeometry = new THREE.CylinderGeometry(1.0, 1.0, 0.7, 18);
+  wheelGeometry.rotateZ(Math.PI / 2);
+  const wheelOffsets = [
+    [-1.7, 1.0, 1.6],
+    [1.7, 1.0, 1.6],
+    [-1.7, 1.0, -1.6],
+    [1.7, 1.0, -1.6],
+  ];
+  const wheels = [];
+  wheelOffsets.forEach(([x, y, z]) => {
+    const wheel = new THREE.Mesh(wheelGeometry, darkMaterial);
+    wheel.position.set(x, y, z);
+    group.add(wheel);
+    wheels.push(wheel);
+  });
+
+  const fenderGeometry = new THREE.BoxGeometry(1.4, 0.6, 1.6);
+  const fenderOffsets = [
+    [-1.7, 1.8, 1.6],
+    [1.7, 1.8, 1.6],
+    [-1.7, 1.8, -1.6],
+    [1.7, 1.8, -1.6],
+  ];
+  fenderOffsets.forEach(([x, y, z]) => {
+    const fender = new THREE.Mesh(fenderGeometry, trimMaterial);
+    fender.position.set(x, y, z);
+    group.add(fender);
+  });
+
+
+  group.scale.set(0.7, 0.7, 0.7);
+
+  return { root: group, wheels, wheelRadius: 0.7, bodyMaterials: [bodyMaterial] };
+}
+
+function loadCarModel(parent, fallbackRoot) {
+  const loader = new GLTFLoader();
+  loader.load(
+    "assets/models/Humvee.glb",
+    (gltf) => {
+      const model = gltf.scene;
+      model.traverse((child) => {
+        if (child.isMesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
+        }
+      });
+
+      let box = new THREE.Box3().setFromObject(model);
+      const size = box.getSize(new THREE.Vector3());
+      if (size.x > size.z) {
+        model.rotation.y = Math.PI / 2;
+      }
+
+      box = new THREE.Box3().setFromObject(model);
+      const rotatedSize = box.getSize(new THREE.Vector3());
+      const targetLength = 4.2;
+      const scale = targetLength / Math.max(0.01, rotatedSize.z);
+      model.scale.setScalar(scale);
+
+      box = new THREE.Box3().setFromObject(model);
+      const center = box.getCenter(new THREE.Vector3());
+      model.position.x -= center.x;
+      model.position.z -= center.z;
+      model.position.y -= box.min.y;
+
+      parent.remove(fallbackRoot);
+      parent.add(model);
+
+      const wheelMatches = [];
+      model.traverse((child) => {
+        if (child.isMesh && /wheel|tire|tyre/i.test(child.name)) {
+          wheelMatches.push(child);
+        }
+      });
+
+      let wheelRadius = 0.6;
+      if (wheelMatches.length) {
+        const wheelBox = new THREE.Box3().setFromObject(wheelMatches[0]);
+        const wheelSize = wheelBox.getSize(new THREE.Vector3());
+        wheelRadius = Math.max(wheelSize.x, wheelSize.y, wheelSize.z) * 0.5;
+      }
+
+      parent.userData.wheels = wheelMatches;
+      parent.userData.wheelRadius = wheelRadius;
+      parent.userData.model = model;
+      applyCarColor(state.carColor);
+    },
+    undefined,
+    () => {}
+  );
+}
+
+function loadRockModel(obstaclesList) {
+  const loader = new GLTFLoader();
+  loader.load(
+    "assets/models/Rock.glb",
+    (gltf) => {
+      const source = gltf.scene;
+      if (!source) return;
+      source.traverse((child) => {
+        if (child.isMesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
+        }
+      });
+      applyRockToObstacles(obstaclesList, source);
+    },
+    undefined,
+    () => {}
+  );
+}
+
+function applyRockToObstacles(obstaclesList, source) {
+  obstaclesList.forEach((obstacle) => {
+    const rock = source.clone(true);
+    const bounds = new THREE.Box3().setFromObject(rock);
+    const size = bounds.getSize(new THREE.Vector3());
+    const target = obstacle.targetSize;
+    const scale = Math.min(
+      target.width / Math.max(0.01, size.x),
+      target.height / Math.max(0.01, size.y),
+      target.depth / Math.max(0.01, size.z)
+    );
+
+    rock.scale.setScalar(scale);
+    const scaledBounds = new THREE.Box3().setFromObject(rock);
+    const center = scaledBounds.getCenter(new THREE.Vector3());
+    rock.position.x -= center.x;
+    rock.position.z -= center.z;
+    rock.position.y -= scaledBounds.min.y;
+    rock.rotation.y = Math.random() * Math.PI * 2;
+
+    if (obstacle.placeholder) {
+      obstacle.mesh.remove(obstacle.placeholder);
+    }
+    obstacle.mesh.add(rock);
+  });
+}
+
+
+function applyCarColor(color) {
+  if (car?.userData?.bodyMaterials?.length) {
+    car.userData.bodyMaterials.forEach((material) => {
+      if (material?.color) material.color.copy(color);
+    });
+  }
+
+  if (car?.userData?.model) {
+    applyColorToModel(car.userData.model, color);
+  }
+}
+
+function applyColorToModel(model, color) {
+  const isBrightWhite = color.r > 0.95 && color.g > 0.95 && color.b > 0.95;
+  model.traverse((child) => {
+    if (!child.isMesh) return;
+    if (/wheel|tire|tyre/i.test(child.name)) return;
+
+    const materials = Array.isArray(child.material) ? child.material : [child.material];
+    materials.forEach((material) => {
+      if (!material?.color) return;
+      if (material.transparent && material.opacity < 0.9) return;
+      if (/glass|window/i.test(material.name || "")) return;
+      if (isBrightWhite) {
+        if (material.map && !material.userData?.originalMap) {
+          material.userData = { ...(material.userData || {}), originalMap: material.map };
+        }
+        material.map = null;
+      } else if (material.userData?.originalMap) {
+        material.map = material.userData.originalMap;
+      }
+      material.color.copy(color);
+      material.needsUpdate = true;
+    });
+  });
 }
 
 function buildTrackTail(endPoint, tangent, halfWidth, tailLength, roadMaterial, edgeMaterial) {
@@ -447,18 +670,22 @@ function buildObstacles(trackData) {
     const depth = 1.6;
     const height = 1.4;
 
-    const mesh = new THREE.Mesh(
+    const group = new THREE.Group();
+    const placeholder = new THREE.Mesh(
       new THREE.BoxGeometry(width, height, depth),
       new THREE.MeshStandardMaterial({ color: 0xff8c1a })
     );
-    mesh.position.copy(center).addScaledVector(left, item.lateral);
-    mesh.position.y = 0.75;
+    placeholder.position.y = height * 0.5;
+    group.add(placeholder);
+    group.position.copy(center).addScaledVector(left, item.lateral);
 
     const lateralHalf = width * 0.5;
     const progressHalf = (depth * 0.5) / trackData.total;
 
     return {
-      mesh,
+      mesh: group,
+      placeholder,
+      targetSize: { width, height, depth },
       lateralHalf,
       progressHalf,
       lateral: item.lateral,
@@ -564,17 +791,25 @@ function updateCar(delta) {
   car.position.copy(center).addScaledVector(left, state.lateral);
   ground.position.x = car.position.x;
   ground.position.z = car.position.z;
-  car.position.y = 0.7;
+  car.position.y = 0.05;
   const baseYaw = Math.atan2(tangent.x, tangent.z);
   const slip = Math.atan2(state.lateralVel, Math.max(6, Math.abs(state.speed)));
   car.rotation.y = baseYaw + slip * 0.2;
+
+  if (car.userData?.wheels?.length) {
+    const radius = car.userData.wheelRadius || 1.0;
+    car.userData.wheelSpin += (state.speed * delta) / Math.max(0.1, radius);
+    car.userData.wheels.forEach((wheel) => {
+      wheel.rotation.x = car.userData.wheelSpin;
+    });
+  }
 
   if (Math.abs(state.lateral) > track.halfWidth - 0.3) {
     state.speed *= 0.7;
   }
 
   const carHalfX = 1.2;
-  const carHalfZ = 2.1;
+  const carHalfZ = 1.6;
   const carProgressHalf = carHalfZ / track.total;
   obstacles.forEach((obstacle) => {
     const dx = Math.abs(state.lateral - obstacle.lateral);
@@ -681,6 +916,15 @@ function bindControls() {
   });
 }
 
+function bindColorPicker() {
+  if (!carColorInput) return;
+  carColorInput.addEventListener("input", (event) => {
+    const nextColor = new THREE.Color(event.target.value);
+    state.carColor = nextColor;
+    applyCarColor(nextColor);
+  });
+}
+
 function onResize() {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
@@ -701,6 +945,7 @@ function resetRun() {
 }
 
 bindControls();
+bindColorPicker();
 window.addEventListener("resize", onResize);
 finishRestart.addEventListener("click", resetRun);
 requestAnimationFrame(animate);
