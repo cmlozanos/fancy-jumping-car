@@ -94,6 +94,10 @@ const obstacles = buildObstacles(track);
 obstacles.forEach((obstacle) => scene.add(obstacle.mesh));
 loadRockModels(obstacles);
 
+const trees = buildTrees(track);
+trees.forEach((tree) => scene.add(tree.mesh));
+loadTreeModels(trees);
+
 const clock = new THREE.Clock();
 
 function buildTrack(texture) {
@@ -387,6 +391,66 @@ function loadRockModels(obstaclesList) {
       undefined,
       () => onLoaded(null)
     );
+  });
+}
+
+function loadTreeModels(treesList) {
+  const loader = new GLTFLoader();
+  const sources = [];
+  const paths = ["assets/models/Tree.glb", "assets/models/Tree_2.glb", "assets/models/Tree_3.glb"];
+  let loaded = 0;
+
+  const onLoaded = (scene) => {
+    if (scene) {
+      scene.traverse((child) => {
+        if (child.isMesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
+        }
+      });
+      sources.push(scene);
+    }
+    loaded += 1;
+    if (loaded === paths.length && sources.length) {
+      applyTreesToObjects(treesList, sources);
+    }
+  };
+
+  paths.forEach((path) => {
+    loader.load(
+      path,
+      (gltf) => onLoaded(gltf.scene),
+      undefined,
+      () => onLoaded(null)
+    );
+  });
+}
+
+function applyTreesToObjects(treesList, sources) {
+  treesList.forEach((tree) => {
+    const source = sources[Math.floor(Math.random() * sources.length)];
+    const model = source.clone(true);
+    const bounds = new THREE.Box3().setFromObject(model);
+    const size = bounds.getSize(new THREE.Vector3());
+    const target = tree.targetSize;
+    const scale = Math.min(
+      target.width / Math.max(0.01, size.x),
+      target.height / Math.max(0.01, size.y),
+      target.depth / Math.max(0.01, size.z)
+    );
+
+    model.scale.setScalar(scale);
+    const scaledBounds = new THREE.Box3().setFromObject(model);
+    const center = scaledBounds.getCenter(new THREE.Vector3());
+    model.position.x -= center.x;
+    model.position.z -= center.z;
+    model.position.y -= scaledBounds.min.y;
+    model.rotation.y = Math.random() * Math.PI * 2;
+
+    if (tree.placeholder) {
+      tree.mesh.remove(tree.placeholder);
+    }
+    tree.mesh.add(model);
   });
 }
 
@@ -707,6 +771,50 @@ function buildObstacles(trackData) {
   });
 }
 
+function buildTrees(trackData) {
+  const count = 16;
+  const trees = [];
+  const baseOffset = trackData.halfWidth + 6.5;
+
+  for (let i = 0; i < count; i += 1) {
+    const t = 0.06 + (i / (count - 1)) * 0.88;
+    const center = getTrackPoint(trackData, t);
+    const tangent = getTrackTangent(trackData, t);
+    const left = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
+    const side = i % 2 === 0 ? 1 : -1;
+    const jitter = (Math.sin(i * 12.7) + 1) * 0.6;
+    const lateral = side * (baseOffset + jitter);
+
+    const width = 3.2;
+    const depth = 3.2;
+    const height = 6.5;
+
+    const group = new THREE.Group();
+    const placeholder = new THREE.Mesh(
+      new THREE.CylinderGeometry(1.2, 1.6, height, 8),
+      new THREE.MeshStandardMaterial({ color: 0x2a5a2a })
+    );
+    placeholder.position.y = height * 0.5;
+    group.add(placeholder);
+    group.position.copy(center).addScaledVector(left, lateral);
+
+    const lateralHalf = width * 0.5;
+    const progressHalf = (depth * 0.5) / trackData.total;
+
+    trees.push({
+      mesh: group,
+      placeholder,
+      targetSize: { width, height, depth },
+      lateralHalf,
+      progressHalf,
+      lateral,
+      t,
+    });
+  }
+
+  return trees;
+}
+
 function getTrackPoint(trackData, t) {
   if (t <= 0) return trackData.points[0].clone();
   if (t >= 1) return trackData.points[trackData.points.length - 1].clone();
@@ -834,6 +942,19 @@ function updateCar(delta) {
       state.progress = Math.max(0, state.progress - 0.0015);
       state.speed = Math.min(state.speed, 0);
       state.speed -= 14 * delta;
+    }
+  });
+
+  trees.forEach((tree) => {
+    const dx = Math.abs(state.lateral - tree.lateral);
+    const dz = Math.abs(state.progress - tree.t);
+    if (dx < carHalfX + tree.lateralHalf && dz < carProgressHalf + tree.progressHalf) {
+      const pushDir = Math.sign(state.lateral - tree.lateral) || 1;
+      state.lateral += pushDir * 2.2 * delta;
+      state.lateralVel *= 0.1;
+      state.progress = Math.max(0, state.progress - 0.002);
+      state.speed = Math.min(state.speed, 0);
+      state.speed -= 18 * delta;
     }
   });
 
