@@ -46,7 +46,7 @@ scene.background = new THREE.Color(0x8fb3ff);
 
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
 const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.25));
 renderer.setSize(window.innerWidth, window.innerHeight);
 container.appendChild(renderer.domElement);
 
@@ -58,13 +58,9 @@ scene.add(dirLight);
 
 const sky = new THREE.Mesh(
   new THREE.SphereGeometry(600, 24, 16),
-  new THREE.MeshBasicMaterial({ color: 0x7aa2ff, side: THREE.BackSide, depthWrite: false })
+  new THREE.MeshBasicMaterial({ color: 0x7aa2ff, side: THREE.BackSide })
 );
-sky.material.depthTest = false;
 scene.add(sky);
-
-const skyDecor = buildSkyDecor();
-sky.add(skyDecor);
 
 const ground = new THREE.Mesh(
   new THREE.PlaneGeometry(4000, 4000),
@@ -252,54 +248,6 @@ function buildTrack(texture) {
   };
 }
 
-function buildSkyDecor() {
-  const group = new THREE.Group();
-
-  const sunMaterial = new THREE.MeshBasicMaterial({ color: 0xffe28a, depthWrite: false });
-  sunMaterial.depthTest = false;
-  const sun = new THREE.Mesh(new THREE.SphereGeometry(22, 24, 18), sunMaterial);
-  sun.position.set(120, 180, -260);
-  group.add(sun);
-
-  const glowMaterial = new THREE.MeshBasicMaterial({
-    color: 0xfff1b8,
-    transparent: true,
-    opacity: 0.35,
-    depthWrite: false,
-  });
-  glowMaterial.depthTest = false;
-  const glow = new THREE.Mesh(new THREE.SphereGeometry(34, 24, 18), glowMaterial);
-  glow.position.copy(sun.position);
-  group.add(glow);
-
-  const cloudMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff, depthWrite: false });
-  cloudMaterial.depthTest = false;
-  const cloudPositions = [
-    [-180, 140, -120],
-    [-60, 120, 40],
-    [80, 150, -30],
-    [210, 130, 120],
-    [0, 170, -220],
-  ];
-
-  cloudPositions.forEach(([x, y, z], index) => {
-    const cloud = new THREE.Group();
-    const puffSizes = [18, 26, 20, 14];
-    puffSizes.forEach((size, puffIndex) => {
-      const puff = new THREE.Mesh(
-        new THREE.SphereGeometry(size, 16, 12),
-        cloudMaterial
-      );
-      puff.position.set((puffIndex - 1.5) * 16, (puffIndex % 2) * 6, (puffIndex - 1.5) * 6);
-      cloud.add(puff);
-    });
-    cloud.position.set(x, y, z);
-    cloud.scale.setScalar(1 + (index % 2) * 0.2);
-    group.add(cloud);
-  });
-
-  return group;
-}
 
 function buildCar() {
   const group = new THREE.Group();
@@ -378,8 +326,8 @@ function loadCarModel(parent, fallbackRoot) {
       const model = gltf.scene;
       model.traverse((child) => {
         if (child.isMesh) {
-          child.castShadow = true;
-          child.receiveShadow = true;
+          child.castShadow = false;
+          child.receiveShadow = false;
         }
       });
 
@@ -438,8 +386,8 @@ function loadRockModels(obstaclesList) {
     if (scene) {
       scene.traverse((child) => {
         if (child.isMesh) {
-          child.castShadow = true;
-          child.receiveShadow = true;
+          child.castShadow = false;
+          child.receiveShadow = false;
         }
       });
       sources.push(scene);
@@ -470,8 +418,8 @@ function loadTreeModels(treesList) {
     if (scene) {
       scene.traverse((child) => {
         if (child.isMesh) {
-          child.castShadow = true;
-          child.receiveShadow = true;
+          child.castShadow = false;
+          child.receiveShadow = false;
         }
       });
       sources.push(scene);
