@@ -19,6 +19,8 @@ const state = {
   lateralVel: 0,
   headingOffset: 0,
   progress: 0,
+  jumpY: 0,
+  jumpVel: 0,
   carColor: new THREE.Color("#ff2d2d"),
   checkpoints: [0.25, 0.5, 0.75],
   checkpointIndex: 0,
@@ -93,6 +95,9 @@ scene.add(startLine);
 const obstacles = buildObstacles(track);
 obstacles.forEach((obstacle) => scene.add(obstacle.mesh));
 loadRockModels(obstacles);
+
+const ramps = buildRamps(track, obstacles);
+ramps.forEach((ramp) => scene.add(ramp.mesh));
 
 const trees = buildTrees(track);
 trees.forEach((tree) => scene.add(tree.mesh));
@@ -730,11 +735,11 @@ function buildStartLine(trackData) {
 
 function buildObstacles(trackData) {
   const obstaclesData = [
-    { t: 0.18, lateral: -2.2 },
+    { t: 0.18, lateral: -2.2, ramp: true },
     { t: 0.32, lateral: 2.4 },
-    { t: 0.46, lateral: -1.8 },
+    { t: 0.46, lateral: -1.8, ramp: true },
     { t: 0.58, lateral: 2.0 },
-    { t: 0.7, lateral: -2.6 },
+    { t: 0.7, lateral: -2.6, ramp: true },
     { t: 0.84, lateral: 2.2 },
   ];
 
@@ -767,8 +772,48 @@ function buildObstacles(trackData) {
       progressHalf,
       lateral: item.lateral,
       t: item.t,
+      height,
+      ramp: item.ramp === true,
     };
   });
+}
+
+function buildRamps(trackData, obstaclesList) {
+  const rampWidth = 3.2;
+  const rampLength = 4.8;
+  const rampHeight = 1.1;
+  const rampAngle = Math.atan2(rampHeight, rampLength);
+  const material = new THREE.MeshStandardMaterial({ color: 0x2f2f2f, roughness: 0.8 });
+
+  return obstaclesList
+    .filter((obstacle) => obstacle.ramp)
+    .map((obstacle) => {
+      const rampT = Math.max(0, obstacle.t - 0.02);
+      const center = getTrackPoint(trackData, rampT);
+      const tangent = getTrackTangent(trackData, rampT);
+      const left = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
+
+      const mesh = new THREE.Mesh(
+        new THREE.BoxGeometry(rampWidth, rampHeight, rampLength),
+        material
+      );
+      mesh.rotation.x = -rampAngle;
+      mesh.position.copy(center).addScaledVector(left, obstacle.lateral);
+      mesh.position.y = rampHeight * 0.5;
+      mesh.rotation.y = Math.atan2(tangent.x, tangent.z);
+
+      const lateralHalf = rampWidth * 0.5;
+      const progressHalf = (rampLength * 0.5) / trackData.total;
+
+      return {
+        mesh,
+        t: rampT,
+        lateral: obstacle.lateral,
+        lateralHalf,
+        progressHalf,
+        height: rampHeight,
+      };
+    });
 }
 
 function buildTrees(trackData) {
@@ -873,6 +918,8 @@ function updateCar(delta) {
   const curveForce = 0.0022;
   const wheelbase = 4.2;
   const maxSteer = 0.55;
+  const gravity = -28;
+
 
   if (input.action && !input.reverse) {
     state.speed = Math.min(maxSpeed, state.speed + accel * delta);
@@ -908,11 +955,31 @@ function updateCar(delta) {
   const center = getTrackPoint(track, state.progress);
   const tangent = getTrackTangent(track, state.progress);
   const left = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
+  const carHalfX = 1.5;
+  const carHalfZ = 2.0;
+  const carProgressHalf = carHalfZ / track.total;
+
+  ramps.forEach((ramp) => {
+    const dx = Math.abs(state.lateral - ramp.lateral);
+    const dz = Math.abs(state.progress - ramp.t);
+    if (dx < carHalfX + ramp.lateralHalf && dz < carProgressHalf + ramp.progressHalf) {
+      if (state.jumpY <= 0.02 && state.speed > 4) {
+        state.jumpVel = Math.max(state.jumpVel, Math.abs(state.speed) * 0.16 + 5.2);
+      }
+    }
+  });
+
+  state.jumpVel += gravity * delta;
+  state.jumpY += state.jumpVel * delta;
+  if (state.jumpY < 0) {
+    state.jumpY = 0;
+    state.jumpVel = 0;
+  }
 
   car.position.copy(center).addScaledVector(left, state.lateral);
   ground.position.x = car.position.x;
   ground.position.z = car.position.z;
-  car.position.y = 0.05;
+  car.position.y = 0.05 + state.jumpY;
   const baseYaw = Math.atan2(tangent.x, tangent.z);
   const slip = Math.atan2(state.lateralVel, Math.max(6, Math.abs(state.speed)));
   car.rotation.y = baseYaw + slip * 0.2;
@@ -929,10 +996,8 @@ function updateCar(delta) {
     state.speed *= 0.7;
   }
 
-  const carHalfX = 1.5;
-  const carHalfZ = 2.0;
-  const carProgressHalf = carHalfZ / track.total;
   obstacles.forEach((obstacle) => {
+    if (state.jumpY > obstacle.height * 0.6) return;
     const dx = Math.abs(state.lateral - obstacle.lateral);
     const dz = Math.abs(state.progress - obstacle.t);
     if (dx < carHalfX + obstacle.lateralHalf && dz < carProgressHalf + obstacle.progressHalf) {
