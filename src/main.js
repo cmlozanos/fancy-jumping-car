@@ -89,6 +89,7 @@ function buildTrack(texture) {
   const length = 800;
   const segments = 200;
   const halfWidth = 6;
+  const tailLength = 140;
   const points = [];
   const distances = [];
   let total = 0;
@@ -115,7 +116,9 @@ function buildTrack(texture) {
   for (let i = 0; i <= segments; i += 1) {
     const current = points[i];
     const next = points[Math.min(i + 1, segments)];
-    const tangent = new THREE.Vector3().subVectors(next, current).normalize();
+    const prev = points[Math.max(i - 1, 0)];
+    const tangentSource = i === segments ? new THREE.Vector3().subVectors(current, prev) : new THREE.Vector3().subVectors(next, current);
+    const tangent = tangentSource.normalize();
     const left = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
 
     const leftPoint = current.clone().addScaledVector(left, halfWidth);
@@ -192,16 +195,59 @@ function buildTrack(texture) {
   leftEdgeMesh.position.y = 0.18;
   rightEdgeMesh.position.y = 0.18;
 
+  const tail = buildTrackTail(
+    points[points.length - 1],
+    getTrackTangent({ points }, 1),
+    halfWidth,
+    tailLength,
+    material,
+    edgeMaterial
+  );
+
   return {
     mesh,
     leftEdgeMesh,
     rightEdgeMesh,
+    tailMesh: tail.mesh,
+    tailLeftEdge: tail.leftEdge,
+    tailRightEdge: tail.rightEdge,
     points,
     distances,
     total,
     halfWidth,
     length,
+    tailLength,
   };
+}
+
+function buildTrackTail(endPoint, tangent, halfWidth, tailLength, roadMaterial, edgeMaterial) {
+  const yaw = Math.atan2(tangent.x, tangent.z);
+  const center = endPoint.clone().addScaledVector(tangent, tailLength * 0.5);
+
+  const tailMesh = new THREE.Mesh(
+    new THREE.PlaneGeometry(halfWidth * 2, tailLength),
+    roadMaterial
+  );
+  tailMesh.rotation.x = -Math.PI / 2;
+  tailMesh.rotation.y = yaw;
+  tailMesh.position.copy(center);
+  tailMesh.position.y = 0.12;
+
+  const edgeWidth = 0.6;
+  const leftEdge = new THREE.Mesh(new THREE.BoxGeometry(edgeWidth, 0.1, tailLength), edgeMaterial);
+  const rightEdge = new THREE.Mesh(new THREE.BoxGeometry(edgeWidth, 0.1, tailLength), edgeMaterial);
+
+  const leftOffset = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize().multiplyScalar(halfWidth + edgeWidth * 0.5);
+  const rightOffset = leftOffset.clone().multiplyScalar(-1);
+
+  leftEdge.position.copy(center).add(leftOffset);
+  rightEdge.position.copy(center).add(rightOffset);
+  leftEdge.rotation.y = yaw;
+  rightEdge.rotation.y = yaw;
+  leftEdge.position.y = 0.18;
+  rightEdge.position.y = 0.18;
+
+  return { mesh: tailMesh, leftEdge, rightEdge };
 }
 
 function createTrackTexture() {
@@ -252,7 +298,7 @@ function buildCheckpoints(trackData) {
 
 function buildCheckpointGate(trackData, t) {
   const group = new THREE.Group();
-  const postMaterial = new THREE.MeshStandardMaterial({ color: 0x22314f });
+  const postMaterial = new THREE.MeshStandardMaterial({ color: 0x111111 });
   const bannerMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
 
   const leftPost = new THREE.Mesh(new THREE.BoxGeometry(0.7, 3.6, 0.7), postMaterial);
@@ -299,7 +345,7 @@ function buildCheckpointGate(trackData, t) {
 
 function buildFinishGate(trackData) {
   const group = new THREE.Group();
-  const postMaterial = new THREE.MeshStandardMaterial({ color: 0x222222 });
+  const postMaterial = new THREE.MeshStandardMaterial({ color: 0x111111 });
   const bannerMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
 
   const leftPost = new THREE.Mesh(new THREE.BoxGeometry(0.8, 4.5, 0.8), postMaterial);
@@ -338,26 +384,6 @@ function buildFinishGate(trackData) {
     );
     finishLabel.position.set(0, 4.8, 0.3);
     group.add(finishLabel);
-
-    const floorCanvas = document.createElement("canvas");
-    floorCanvas.width = 512;
-    floorCanvas.height = 128;
-    const floorCtx = floorCanvas.getContext("2d");
-    floorCtx.fillStyle = "#ffffff";
-    floorCtx.fillRect(0, 0, floorCanvas.width, floorCanvas.height);
-    floorCtx.fillStyle = "#111111";
-    floorCtx.font = "bold 64px sans-serif";
-    floorCtx.textAlign = "center";
-    floorCtx.textBaseline = "middle";
-    floorCtx.fillText("FINISH", floorCanvas.width / 2, floorCanvas.height / 2);
-
-    const floorLabel = new THREE.Mesh(
-      new THREE.PlaneGeometry(10, 3),
-      new THREE.MeshStandardMaterial({ map: new THREE.CanvasTexture(floorCanvas), color: 0xffffff })
-    );
-    floorLabel.rotation.x = -Math.PI / 2;
-    floorLabel.position.set(0, 0.05, 1.6);
-    group.add(floorLabel);
 
   const pos = getTrackPoint(trackData, 1);
   const tangent = getTrackTangent(trackData, 1);
@@ -442,6 +468,9 @@ function buildObstacles(trackData) {
 }
 
 function getTrackPoint(trackData, t) {
+  if (t <= 0) return trackData.points[0].clone();
+  if (t >= 1) return trackData.points[trackData.points.length - 1].clone();
+
   const distance = t * trackData.total;
   let idx = trackData.distances.findIndex((d) => d >= distance);
   if (idx <= 0) return trackData.points[0].clone();
@@ -454,6 +483,17 @@ function getTrackPoint(trackData, t) {
 }
 
 function getTrackTangent(trackData, t) {
+  if (t >= 1) {
+    const last = trackData.points[trackData.points.length - 1];
+    const prev = trackData.points[trackData.points.length - 2];
+    return last.clone().sub(prev).normalize();
+  }
+  if (t <= 0) {
+    const first = trackData.points[0];
+    const next = trackData.points[1];
+    return next.clone().sub(first).normalize();
+  }
+
   const dt = 1 / trackData.points.length;
   const p1 = getTrackPoint(trackData, Math.min(1, t + dt));
   const p0 = getTrackPoint(trackData, Math.max(0, t - dt));
@@ -510,8 +550,12 @@ function updateCar(delta) {
   state.lateral = Math.max(-track.halfWidth + 0.6, Math.min(track.halfWidth - 0.6, state.lateral));
 
   state.progress += state.speed * delta * 0.0025;
-  if (state.progress > 1) state.progress = 1;
+  const maxProgress = 1;
+  if (state.progress > maxProgress) state.progress = maxProgress;
   if (state.progress < 0) state.progress = 0;
+  if (state.progress >= 1 && state.speed > 0) {
+    state.speed = 0;
+  }
 
   const center = getTrackPoint(track, state.progress);
   const tangent = getTrackTangent(track, state.progress);
@@ -570,9 +614,6 @@ function updateCheckpoints(center) {
     if (gate?.userData?.bannerMaterial) {
       gate.userData.bannerMaterial.color.set(0x77ff77);
     }
-    if (gate?.userData?.postMaterial) {
-      gate.userData.postMaterial.color.set(0x77ff77);
-    }
     state.checkpointIndex += 1;
   }
   hudCheckpoint.textContent = `${state.checkpointIndex}/${state.checkpoints.length}`;
@@ -587,9 +628,6 @@ function checkFinish() {
     if (finishGate?.userData?.bannerMaterial) {
       finishGate.userData.bannerMaterial.color.set(0x77ff77);
     }
-    if (finishGate?.userData?.postMaterial) {
-      finishGate.userData.postMaterial.color.set(0x77ff77);
-    }
   }
 }
 
@@ -602,12 +640,10 @@ function animate() {
   const delta = clock.getDelta();
   if (!state.finished) {
     state.time += delta;
-    updateCar(delta);
-    updateHud();
-    renderer.render(scene, camera);
-  } else {
-    renderer.render(scene, camera);
   }
+  updateCar(delta);
+  updateHud();
+  renderer.render(scene, camera);
   requestAnimationFrame(animate);
 }
 
