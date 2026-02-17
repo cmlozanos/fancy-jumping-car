@@ -15,6 +15,7 @@
           <div class="hud-item">Tiempo: <span id="hud-time">0.00</span>s</div>
           <div class="hud-item">Velocidad: <span id="hud-speed">0</span> km/h</div>
           <div class="hud-item">Checkpoint: <span id="hud-checkpoint">0/3</span></div>
+          <button id="open-levels" class="ghost" type="button">Niveles</button>
           <label class="color-picker" for="car-color">
             Color coche
             <input id="car-color" type="color" value="#ff2d2d" aria-label="Color del coche" />
@@ -31,7 +32,14 @@
         <div id="finish" class="panel hidden">
           <h1>Vuelta completada</h1>
           <p>Tiempo: <span id="finish-time">0.00</span>s</p>
+          <button id="finish-next" class="primary">Siguiente nivel</button>
           <button id="finish-restart" class="primary">Reiniciar</button>
+        </div>
+
+        <div id="level-menu" class="panel hidden" role="dialog" aria-label="Selector de niveles">
+          <h1>Selecciona nivel</h1>
+          <div id="level-grid" class="level-grid"></div>
+          <button id="level-close" class="primary">Cerrar</button>
         </div>
       </div>
     </div>

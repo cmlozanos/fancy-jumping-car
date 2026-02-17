@@ -10,7 +10,12 @@ const hudCheckpoint = document.getElementById("hud-checkpoint");
 const finishPanel = document.getElementById("finish");
 const finishTime = document.getElementById("finish-time");
 const finishRestart = document.getElementById("finish-restart");
+const finishNext = document.getElementById("finish-next");
 const carColorInput = document.getElementById("car-color");
+const openLevels = document.getElementById("open-levels");
+const levelMenu = document.getElementById("level-menu");
+const levelGrid = document.getElementById("level-grid");
+const levelClose = document.getElementById("level-close");
 const controlButtons = document.querySelectorAll(".control-btn");
 
 const savedCarColor = (() => {
@@ -30,6 +35,7 @@ const state = {
   jumpVel: 0,
   rampJumped: false,
   carColor: new THREE.Color(savedCarColor),
+  levelKey: CONFIG.levels?.[0]?.key ?? "asfalto",
   checkpoints: CONFIG.hud.checkpoints,
   checkpointIndex: 0,
   finished: false,
@@ -72,10 +78,13 @@ ground.position.y = -0.5;
 scene.add(ground);
 
 const trackTexture = createTrackTexture();
-const track = buildTrack(trackTexture);
-scene.add(track.mesh);
-scene.add(track.leftEdgeMesh);
-scene.add(track.rightEdgeMesh);
+let track;
+let checkpoints;
+let finishGate;
+let startLine;
+let obstacles;
+let ramps;
+let trees;
 
 const car = new THREE.Group();
 const fallbackCar = buildCar();
@@ -92,27 +101,7 @@ loadCarModel(car, fallbackCar.root);
 applyCarColor(state.carColor);
 if (carColorInput) carColorInput.value = savedCarColor;
 
-const checkpoints = buildCheckpoints(track);
-checkpoints.forEach((gate) => scene.add(gate));
-
-const finishGate = buildFinishGate(track);
-scene.add(finishGate);
-
-const startLine = buildStartLine(track);
-scene.add(startLine);
-
-const obstacles = buildObstacles(track);
-obstacles.forEach((obstacle) => scene.add(obstacle.mesh));
-loadRockModels(obstacles);
-
-const ramps = buildRamps(track, obstacles);
-ramps.forEach((ramp) => scene.add(ramp.mesh));
-
-const trees = buildTrees(track);
-trees.forEach((tree) => scene.add(tree.mesh));
-loadTreeModels(trees);
-
-const world = { car, ground, obstacles, ramps, trees };
+let world = { car, ground, obstacles: [], ramps: [], trees: [] };
 const trackOps = {
   getPoint: getTrackPoint,
   getTangent: getTrackTangent,
@@ -121,8 +110,88 @@ const trackOps = {
 
 const clock = new THREE.Clock();
 
-function buildTrack(texture) {
-  const length = CONFIG.track.length;
+function buildLevelMenu() {
+  if (!levelGrid || !Array.isArray(CONFIG.levels)) return;
+  levelGrid.innerHTML = CONFIG.levels
+    .map(
+      (level) => `
+        <button class="level-card" data-level="${level.key}" style="--thumb: ${level.thumbColor}">
+          <div class="level-thumb"></div>
+          <div class="level-title">${level.label}</div>
+        </button>
+      `
+    )
+    .join("");
+  updateLevelMenuState();
+}
+
+function getLevelConfig(levelKey) {
+  const levels = Array.isArray(CONFIG.levels) ? CONFIG.levels : [];
+  return levels.find((item) => item.key === levelKey) ?? levels[0];
+}
+
+function clearLevelScene() {
+  if (track) {
+    scene.remove(track.mesh, track.leftEdgeMesh, track.rightEdgeMesh);
+  }
+  if (checkpoints) {
+    checkpoints.forEach((gate) => scene.remove(gate));
+  }
+  if (finishGate) scene.remove(finishGate);
+  if (startLine) scene.remove(startLine);
+  if (obstacles) obstacles.forEach((obstacle) => scene.remove(obstacle.mesh));
+  if (ramps) ramps.forEach((ramp) => scene.remove(ramp.mesh));
+  if (trees) trees.forEach((tree) => scene.remove(tree.mesh));
+}
+
+function initLevel(levelKey) {
+  clearLevelScene();
+  const level = getLevelConfig(levelKey);
+  if (!level) return;
+
+  track = buildTrack(trackTexture, level);
+  scene.add(track.mesh, track.leftEdgeMesh, track.rightEdgeMesh);
+
+  checkpoints = buildCheckpoints(track);
+  checkpoints.forEach((gate) => scene.add(gate));
+
+  finishGate = buildFinishGate(track);
+  scene.add(finishGate);
+
+  startLine = buildStartLine(track);
+  scene.add(startLine);
+
+  obstacles = buildObstacles(track, level);
+  obstacles.forEach((obstacle) => scene.add(obstacle.mesh));
+  loadRockModels(obstacles);
+
+  ramps = buildRamps(track, obstacles);
+  ramps.forEach((ramp) => scene.add(ramp.mesh));
+
+  trees = buildTrees(track, level);
+  trees.forEach((tree) => scene.add(tree.mesh));
+  loadTreeModels(trees);
+
+  world = { car, ground, obstacles, ramps, trees };
+}
+
+function updateLevelMenuState() {
+  if (!levelGrid) return;
+  levelGrid.querySelectorAll(".level-card").forEach((card) => {
+    const isActive = card.dataset.level === state.levelKey;
+    card.classList.toggle("active", isActive);
+  });
+}
+
+function getNextLevelKey() {
+  const levels = Array.isArray(CONFIG.levels) ? CONFIG.levels : [];
+  const index = levels.findIndex((level) => level.key === state.levelKey);
+  if (index < 0 || index + 1 >= levels.length) return null;
+  return levels[index + 1].key;
+}
+
+function buildTrack(texture, level) {
+  const length = level?.trackLength ?? CONFIG.track.length;
   const segments = CONFIG.track.segments;
   const halfWidth = CONFIG.track.halfWidth;
   const tailLength = CONFIG.track.tailLength;
@@ -407,7 +476,6 @@ function loadRockModels(obstaclesList) {
       applyRockToObstacles(obstaclesList, sources);
     }
   };
-
   paths.forEach((path) => {
     loader.load(
       path,
@@ -610,6 +678,17 @@ function createTrackTexture() {
   return texture;
 }
 
+function applyLevel(levelKey) {
+  const level = getLevelConfig(levelKey);
+  if (!level) return;
+  state.levelKey = level.key;
+  if (ground?.material?.color) {
+    ground.material.color.set(level.groundColor);
+  }
+  updateLevelMenuState();
+  initLevel(level.key);
+}
+
 function buildCheckpoints(trackData) {
   const gates = [];
   for (let i = 0; i < state.checkpoints.length; i += 1) {
@@ -752,8 +831,9 @@ function buildStartLine(trackData) {
   return group;
 }
 
-function buildObstacles(trackData) {
-  return CONFIG.obstacles.layout.map((item) => {
+function buildObstacles(trackData, level) {
+  const layout = buildObstacleLayout(level ?? {});
+  return layout.map((item) => {
     const center = getTrackPoint(trackData, item.t);
     const tangent = getTrackTangent(trackData, item.t);
     const left = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
@@ -786,6 +866,20 @@ function buildObstacles(trackData) {
       ramp: item.ramp === true,
     };
   });
+}
+
+function buildObstacleLayout(level) {
+  if (Array.isArray(level.obstacles)) return level.obstacles;
+
+  const count = Math.max(1, level.obstacleCount ?? CONFIG.obstacles.layout.length);
+  const rampCount = Math.min(count, Math.max(0, level.rampCount ?? 0));
+  const result = [];
+  for (let i = 0; i < count; i += 1) {
+    const t = 0.15 + (i / Math.max(1, count - 1)) * 0.7;
+    const lateral = i % 2 === 0 ? -2.4 : 2.4;
+    result.push({ t, lateral, ramp: i < rampCount });
+  }
+  return result;
 }
 
 function buildRamps(trackData, obstaclesList) {
@@ -860,8 +954,8 @@ function buildRampGeometry(frontWidth, backWidth, length, height) {
   return geometry;
 }
 
-function buildTrees(trackData) {
-  const count = CONFIG.trees.count;
+function buildTrees(trackData, level) {
+  const count = level?.treeCount ?? CONFIG.trees.count;
   const trees = [];
   const baseOffset = trackData.halfWidth + CONFIG.trees.baseOffset;
 
@@ -1058,6 +1152,30 @@ function bindColorPicker() {
   });
 }
 
+function bindLevelMenu() {
+  if (!levelMenu || !levelGrid) return;
+
+  levelGrid.addEventListener("click", (event) => {
+    const button = event.target.closest(".level-card");
+    if (!button) return;
+    applyLevel(button.dataset.level);
+    resetRun();
+    levelMenu.classList.add("hidden");
+  });
+
+  if (openLevels) {
+    openLevels.addEventListener("click", () => {
+      levelMenu.classList.remove("hidden");
+    });
+  }
+
+  if (levelClose) {
+    levelClose.addEventListener("click", () => {
+      levelMenu.classList.add("hidden");
+    });
+  }
+}
+
 function onResize() {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
@@ -1076,6 +1194,9 @@ function resetRun() {
   state.jumpVel = 0;
   state.rampJumped = false;
   finishPanel.classList.add("hidden");
+  if (finishNext) {
+    finishNext.classList.add("hidden");
+  }
   hudCheckpoint.textContent = `0/${state.checkpoints.length}`;
   checkpoints.forEach((gate) => {
     if (gate?.userData?.bannerMaterial) {
@@ -1088,7 +1209,19 @@ function resetRun() {
 }
 
 bindControls();
+buildLevelMenu();
 bindColorPicker();
+bindLevelMenu();
+applyLevel(state.levelKey);
+resetRun();
 window.addEventListener("resize", onResize);
 finishRestart.addEventListener("click", resetRun);
+if (finishNext) {
+  finishNext.addEventListener("click", () => {
+    const nextLevel = getNextLevelKey();
+    if (!nextLevel) return;
+    applyLevel(nextLevel);
+    resetRun();
+  });
+}
 requestAnimationFrame(animate);

@@ -10,6 +10,28 @@ export const CONFIG = {
     edge: 0xffffff,
     ramp: 0x9a7b4f,
   },
+  levels: [
+    {
+      key: "asfalto",
+      label: "Asfalto",
+      groundColor: 0x7aa96b,
+      thumbColor: "#6ea85e",
+      trackLength: 700,
+      obstacleCount: 4,
+      rampCount: 2,
+      treeCount: 10,
+    },
+    {
+      key: "tierra",
+      label: "Tierra",
+      groundColor: 0x7b5a3a,
+      thumbColor: "#8a5a34",
+      trackLength: 900,
+      obstacleCount: 7,
+      rampCount: 3,
+      treeCount: 18,
+    },
+  ],
   track: {
     length: 800,
     segments: 200,

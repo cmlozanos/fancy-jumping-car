@@ -85,6 +85,14 @@ body {
   text-transform: uppercase;
 }
 
+
+.ghost {
+  margin-top: 8px;
+  background: transparent;
+  border: 2px solid var(--panel-border);
+  font-size: 10px;
+}
+
 .color-picker input[type="color"] {
   width: 34px;
   height: 24px;
@@ -115,6 +123,40 @@ body {
 .panel p {
   font-size: 12px;
   line-height: 1.5;
+}
+
+.level-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(120px, 1fr));
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.level-card {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border: 2px solid var(--panel-border);
+  background: #0f1321;
+  color: var(--text);
+  text-align: left;
+}
+
+.level-card.active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(255, 204, 102, 0.35);
+}
+
+.level-thumb {
+  height: 80px;
+  border-radius: 8px;
+  border: 2px solid #1f263b;
+  background: linear-gradient(140deg, rgba(255, 255, 255, 0.2), transparent),
+    var(--thumb, #6ea85e);
+}
+
+.level-title {
+  font-size: 10px;
 }
 
 .level-list {
