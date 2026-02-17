@@ -1,5 +1,7 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { updatePhysics } from "./physics.js";
+import { CONFIG } from "./constants.js";
 
 const container = document.getElementById("game");
 const hudTime = document.getElementById("hud-time");
@@ -19,17 +21,15 @@ const savedCarColor = (() => {
 })();
 
 const state = {
-  running: true,
   time: 0,
   speed: 0,
   lateral: 0,
   lateralVel: 0,
-  headingOffset: 0,
   progress: 0,
   jumpY: 0,
   jumpVel: 0,
   carColor: new THREE.Color(savedCarColor),
-  checkpoints: [0.25, 0.5, 0.75],
+  checkpoints: CONFIG.hud.checkpoints,
   checkpointIndex: 0,
   finished: false,
 };
@@ -42,11 +42,11 @@ const input = {
 };
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x8fb3ff);
+scene.background = new THREE.Color(CONFIG.colors.sky);
 
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
 const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.25));
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, CONFIG.render.pixelRatio));
 renderer.setSize(window.innerWidth, window.innerHeight);
 container.appendChild(renderer.domElement);
 
@@ -58,13 +58,13 @@ scene.add(dirLight);
 
 const sky = new THREE.Mesh(
   new THREE.SphereGeometry(600, 24, 16),
-  new THREE.MeshBasicMaterial({ color: 0x7aa2ff, side: THREE.BackSide })
+  new THREE.MeshBasicMaterial({ color: CONFIG.colors.sky, side: THREE.BackSide })
 );
 scene.add(sky);
 
 const ground = new THREE.Mesh(
   new THREE.PlaneGeometry(4000, 4000),
-  new THREE.MeshStandardMaterial({ color: 0x7aa96b })
+  new THREE.MeshStandardMaterial({ color: CONFIG.colors.ground })
 );
 ground.rotation.x = -Math.PI / 2;
 ground.position.y = -0.5;
@@ -85,7 +85,7 @@ car.userData = {
   wheelSpin: 0,
   bodyMaterials: fallbackCar.bodyMaterials,
 };
-car.position.y = 0.05;
+car.position.y = CONFIG.car.baseY;
 scene.add(car);
 loadCarModel(car, fallbackCar.root);
 applyCarColor(state.carColor);
@@ -111,13 +111,20 @@ const trees = buildTrees(track);
 trees.forEach((tree) => scene.add(tree.mesh));
 loadTreeModels(trees);
 
+const world = { car, ground, obstacles, ramps, trees };
+const trackOps = {
+  getPoint: getTrackPoint,
+  getTangent: getTrackTangent,
+  getCurvature: getTrackCurvature,
+};
+
 const clock = new THREE.Clock();
 
 function buildTrack(texture) {
-  const length = 800;
-  const segments = 200;
-  const halfWidth = 9;
-  const tailLength = 140;
+  const length = CONFIG.track.length;
+  const segments = CONFIG.track.segments;
+  const halfWidth = CONFIG.track.halfWidth;
+  const tailLength = CONFIG.track.tailLength;
   const points = [];
   const distances = [];
   let total = 0;
@@ -125,7 +132,9 @@ function buildTrack(texture) {
   for (let i = 0; i <= segments; i += 1) {
     const t = i / segments;
     const z = t * length;
-    const x = Math.sin(t * Math.PI * 4) * 12 + Math.sin(t * Math.PI * 1.5) * 6;
+    const x =
+      Math.sin(t * CONFIG.track.curvatureMajor) * CONFIG.track.curvatureMajorAmp +
+      Math.sin(t * CONFIG.track.curvatureMinor) * CONFIG.track.curvatureMinorAmp;
     points.push(new THREE.Vector3(x, 0, z));
     if (i > 0) {
       total += points[i].distanceTo(points[i - 1]);
@@ -155,8 +164,8 @@ function buildTrack(texture) {
     vertices.push(leftPoint.x, leftPoint.y, leftPoint.z);
     vertices.push(rightPoint.x, rightPoint.y, rightPoint.z);
 
-    const leftOuter = leftPoint.clone().addScaledVector(left, 0.6);
-    const rightOuter = rightPoint.clone().addScaledVector(left, -0.6);
+    const leftOuter = leftPoint.clone().addScaledVector(left, CONFIG.track.edgeOffset);
+    const rightOuter = rightPoint.clone().addScaledVector(left, -CONFIG.track.edgeOffset);
 
     leftStrip.push(leftPoint.x, leftPoint.y, leftPoint.z);
     leftStrip.push(leftOuter.x, leftOuter.y, leftOuter.z);
@@ -187,19 +196,19 @@ function buildTrack(texture) {
   geometry.computeVertexNormals();
 
   const material = new THREE.MeshStandardMaterial({
-    color: 0x1d1f25,
+    color: CONFIG.colors.track,
     map: texture,
-    emissive: 0x555555,
+    emissive: CONFIG.colors.trackEmissive,
     emissiveIntensity: 1.1,
     roughness: 0.9,
     metalness: 0.05,
   });
   const mesh = new THREE.Mesh(geometry, material);
   mesh.receiveShadow = true;
-  mesh.position.y = 0.12;
+  mesh.position.y = CONFIG.track.trackYOffset;
 
   const edgeMaterial = new THREE.MeshStandardMaterial({
-    color: 0xffffff,
+    color: CONFIG.colors.edge,
     side: THREE.DoubleSide,
   });
   const leftEdgeGeometry = new THREE.BufferGeometry();
@@ -220,8 +229,8 @@ function buildTrack(texture) {
 
   const leftEdgeMesh = new THREE.Mesh(leftEdgeGeometry, edgeMaterial);
   const rightEdgeMesh = new THREE.Mesh(rightEdgeGeometry, edgeMaterial);
-  leftEdgeMesh.position.y = 0.18;
-  rightEdgeMesh.position.y = 0.18;
+  leftEdgeMesh.position.y = CONFIG.track.edgeYOffset;
+  rightEdgeMesh.position.y = CONFIG.track.edgeYOffset;
 
   const tail = buildTrackTail(
     points[points.length - 1],
@@ -545,9 +554,9 @@ function buildTrackTail(endPoint, tangent, halfWidth, tailLength, roadMaterial, 
   tailMesh.rotation.x = -Math.PI / 2;
   tailMesh.rotation.y = yaw;
   tailMesh.position.copy(center);
-  tailMesh.position.y = 0.12;
+  tailMesh.position.y = CONFIG.track.trackYOffset;
 
-  const edgeWidth = 0.6;
+  const edgeWidth = CONFIG.track.edgeOffset;
   const leftEdge = new THREE.Mesh(new THREE.BoxGeometry(edgeWidth, 0.1, tailLength), edgeMaterial);
   const rightEdge = new THREE.Mesh(new THREE.BoxGeometry(edgeWidth, 0.1, tailLength), edgeMaterial);
 
@@ -558,8 +567,8 @@ function buildTrackTail(endPoint, tangent, halfWidth, tailLength, roadMaterial, 
   rightEdge.position.copy(center).add(rightOffset);
   leftEdge.rotation.y = yaw;
   rightEdge.rotation.y = yaw;
-  leftEdge.position.y = 0.18;
-  rightEdge.position.y = 0.18;
+  leftEdge.position.y = CONFIG.track.edgeYOffset;
+  rightEdge.position.y = CONFIG.track.edgeYOffset;
 
   return { mesh: tailMesh, leftEdge, rightEdge };
 }
@@ -743,23 +752,14 @@ function buildStartLine(trackData) {
 }
 
 function buildObstacles(trackData) {
-  const obstaclesData = [
-    { t: 0.18, lateral: -2.2, ramp: true },
-    { t: 0.32, lateral: 2.4 },
-    { t: 0.46, lateral: -1.8, ramp: true },
-    { t: 0.58, lateral: 2.0 },
-    { t: 0.7, lateral: -2.6, ramp: true },
-    { t: 0.84, lateral: 2.2 },
-  ];
-
-  return obstaclesData.map((item) => {
+  return CONFIG.obstacles.layout.map((item) => {
     const center = getTrackPoint(trackData, item.t);
     const tangent = getTrackTangent(trackData, item.t);
     const left = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
 
-    const width = 2.4;
-    const depth = 2.4;
-    const height = 2.1;
+    const width = CONFIG.obstacles.size;
+    const depth = CONFIG.obstacles.size;
+    const height = CONFIG.obstacles.height;
 
     const group = new THREE.Group();
     const placeholder = new THREE.Mesh(
@@ -788,16 +788,16 @@ function buildObstacles(trackData) {
 }
 
 function buildRamps(trackData, obstaclesList) {
-  const rampFrontWidth = 1.2;
-  const rampBackWidth = 3.0;
-  const rampLength = 4.4;
-  const rampHeight = 2.6;
-  const material = new THREE.MeshStandardMaterial({ color: 0x9a7b4f, roughness: 0.95 });
+  const rampFrontWidth = CONFIG.ramps.frontWidth;
+  const rampBackWidth = CONFIG.ramps.backWidth;
+  const rampLength = CONFIG.ramps.length;
+  const rampHeight = CONFIG.ramps.height;
+  const material = new THREE.MeshStandardMaterial({ color: CONFIG.colors.ramp, roughness: 0.95 });
 
   return obstaclesList
     .filter((obstacle) => obstacle.ramp)
     .map((obstacle) => {
-      const rampT = Math.max(0, obstacle.t - 0.02);
+      const rampT = Math.max(0, obstacle.t - CONFIG.ramps.offsetT);
       const center = getTrackPoint(trackData, rampT);
       const tangent = getTrackTangent(trackData, rampT);
       const left = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
@@ -860,9 +860,9 @@ function buildRampGeometry(frontWidth, backWidth, length, height) {
 }
 
 function buildTrees(trackData) {
-  const count = 16;
+  const count = CONFIG.trees.count;
   const trees = [];
-  const baseOffset = trackData.halfWidth + 6.5;
+  const baseOffset = trackData.halfWidth + CONFIG.trees.baseOffset;
 
   for (let i = 0; i < count; i += 1) {
     const t = 0.06 + (i / (count - 1)) * 0.88;
@@ -870,12 +870,12 @@ function buildTrees(trackData) {
     const tangent = getTrackTangent(trackData, t);
     const left = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
     const side = i % 2 === 0 ? 1 : -1;
-    const jitter = (Math.sin(i * 12.7) + 1) * 0.6;
+    const jitter = (Math.sin(i * 12.7) + 1) * CONFIG.trees.jitter;
     const lateral = side * (baseOffset + jitter);
 
-    const width = 3.2;
-    const depth = 3.2;
-    const height = 6.5;
+    const width = CONFIG.trees.width;
+    const depth = CONFIG.trees.depth;
+    const height = CONFIG.trees.height;
 
     const group = new THREE.Group();
     const placeholder = new THREE.Mesh(
@@ -950,142 +950,6 @@ function getTrackCurvature(trackData, t) {
   return delta;
 }
 
-function updateCar(delta) {
-  const accel = 22;
-  const reverseAccel = 18;
-  const drag = 0.975;
-  const maxSpeed = 41.7;
-  const maxReverse = 41.7;
-  const steerForce = 14;
-  const driftDrag = 2.4;
-  const curveForce = 0.0022;
-  const wheelbase = 4.2;
-  const maxSteer = 0.55;
-  const gravity = -28;
-
-
-  if (input.action && !input.reverse) {
-    state.speed = Math.min(maxSpeed, state.speed + accel * delta);
-  } else if (input.reverse) {
-    state.speed = Math.max(-maxReverse, state.speed - reverseAccel * delta);
-  } else {
-    state.speed *= drag;
-  }
-
-  if (Math.abs(state.speed) > 0.5) {
-    if (input.left) state.lateralVel -= steerForce * delta;
-    if (input.right) state.lateralVel += steerForce * delta;
-  } else {
-    state.lateralVel *= 0.6;
-  }
-
-  const curvature = getTrackCurvature(track, state.progress);
-  state.lateralVel += curvature * state.speed * state.speed * curveForce;
-
-  state.lateralVel *= Math.max(0, 1 - driftDrag * delta);
-  state.lateral += state.lateralVel * delta;
-
-  state.lateral = Math.max(-track.halfWidth + 0.6, Math.min(track.halfWidth - 0.6, state.lateral));
-
-  state.progress += state.speed * delta * 0.0025;
-  const maxProgress = 1;
-  if (state.progress > maxProgress) state.progress = maxProgress;
-  if (state.progress < 0) state.progress = 0;
-  if (state.progress >= 1 && state.speed > 0) {
-    state.speed = 0;
-  }
-
-  const center = getTrackPoint(track, state.progress);
-  const tangent = getTrackTangent(track, state.progress);
-  const left = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
-  const carHalfX = 1.5;
-  const carHalfZ = 2.0;
-  const carProgressHalf = carHalfZ / track.total;
-
-  let rampLift = 0;
-  ramps.forEach((ramp) => {
-    const dz = state.progress - ramp.t;
-    const rampSpan = ramp.progressHalf * 2;
-    const frac = dz / rampSpan + 0.5;
-    if (frac < 0 || frac > 1) return;
-
-    const widthAt = ramp.frontWidth + (ramp.backWidth - ramp.frontWidth) * frac;
-    const dx = Math.abs(state.lateral - ramp.lateral);
-    if (dx > carHalfX + widthAt * 0.5) return;
-
-    const heightAt = ramp.height * frac;
-    rampLift = Math.max(rampLift, heightAt);
-
-    if (frac > 0.9 && state.jumpY <= ramp.height * 0.9 && state.speed > 4) {
-      state.jumpVel = Math.max(state.jumpVel, Math.abs(state.speed) * 0.22 + 6.4);
-    }
-  });
-
-  if (rampLift > 0) {
-    state.jumpY = Math.max(state.jumpY, rampLift);
-    state.jumpVel = Math.max(0, state.jumpVel);
-  } else {
-    state.jumpVel += gravity * delta;
-    state.jumpY += state.jumpVel * delta;
-  }
-  if (state.jumpY < 0) {
-    state.jumpY = 0;
-    state.jumpVel = 0;
-  }
-
-  car.position.copy(center).addScaledVector(left, state.lateral);
-  ground.position.x = car.position.x;
-  ground.position.z = car.position.z;
-  car.position.y = 0.05 + state.jumpY;
-  const baseYaw = Math.atan2(tangent.x, tangent.z);
-  const slip = Math.atan2(state.lateralVel, Math.max(6, Math.abs(state.speed)));
-  car.rotation.y = baseYaw + slip * 0.2;
-
-  if (car.userData?.wheels?.length) {
-    const radius = car.userData.wheelRadius || 1.0;
-    car.userData.wheelSpin += (state.speed * delta) / Math.max(0.1, radius);
-    car.userData.wheels.forEach((wheel) => {
-      wheel.rotation.x = car.userData.wheelSpin;
-    });
-  }
-
-  if (Math.abs(state.lateral) > track.halfWidth - 0.3) {
-    state.speed *= 0.7;
-  }
-
-  obstacles.forEach((obstacle) => {
-    if (state.jumpY > obstacle.height * 0.6) return;
-    const dx = Math.abs(state.lateral - obstacle.lateral);
-    const dz = Math.abs(state.progress - obstacle.t);
-    if (dx < carHalfX + obstacle.lateralHalf && dz < carProgressHalf + obstacle.progressHalf) {
-      const pushDir = Math.sign(state.lateral - obstacle.lateral) || 1;
-      state.lateral += pushDir * 1.4 * delta;
-      state.lateralVel *= 0.2;
-      state.progress = Math.max(0, state.progress - 0.0015);
-      state.speed = Math.min(state.speed, 0);
-      state.speed -= 14 * delta;
-    }
-  });
-
-  trees.forEach((tree) => {
-    const dx = Math.abs(state.lateral - tree.lateral);
-    const dz = Math.abs(state.progress - tree.t);
-    if (dx < carHalfX + tree.lateralHalf && dz < carProgressHalf + tree.progressHalf) {
-      const pushDir = Math.sign(state.lateral - tree.lateral) || 1;
-      state.lateral += pushDir * 2.2 * delta;
-      state.lateralVel *= 0.1;
-      state.progress = Math.max(0, state.progress - 0.002);
-      state.speed = Math.min(state.speed, 0);
-      state.speed -= 18 * delta;
-    }
-  });
-
-  updateCamera(center, tangent);
-  sky.position.copy(camera.position);
-  updateCheckpoints(center);
-  checkFinish();
-}
-
 function updateCamera(center, tangent) {
   const behind = center.clone().addScaledVector(tangent, -12);
   behind.y += 7;
@@ -1132,7 +996,18 @@ function animate() {
   if (!state.finished) {
     state.time += delta;
   }
-  updateCar(delta);
+  const { center, tangent } = updatePhysics({
+    delta,
+    state,
+    input,
+    track,
+    trackOps,
+    world,
+  });
+  updateCamera(center, tangent);
+  sky.position.copy(camera.position);
+  updateCheckpoints(center);
+  checkFinish();
   updateHud();
   renderer.render(scene, camera);
   requestAnimationFrame(animate);
@@ -1193,7 +1068,6 @@ function resetRun() {
   state.speed = 0;
   state.lateral = 0;
   state.lateralVel = 0;
-  state.headingOffset = 0;
   state.progress = 0;
   state.checkpointIndex = 0;
   state.finished = false;
