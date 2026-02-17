@@ -788,7 +788,7 @@ function buildObstacles(trackData) {
 }
 
 function buildRamps(trackData, obstaclesList) {
-  const rampFrontWidth = CONFIG.ramps.frontWidth;
+  const rampFrontWidth = CONFIG.ramps.backWidth;
   const rampBackWidth = CONFIG.ramps.backWidth;
   const rampLength = CONFIG.ramps.length;
   const rampHeight = CONFIG.ramps.height;
