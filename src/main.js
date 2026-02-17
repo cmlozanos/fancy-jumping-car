@@ -28,6 +28,7 @@ const state = {
   progress: 0,
   jumpY: 0,
   jumpVel: 0,
+  rampJumped: false,
   carColor: new THREE.Color(savedCarColor),
   checkpoints: CONFIG.hud.checkpoints,
   checkpointIndex: 0,
@@ -1071,6 +1072,9 @@ function resetRun() {
   state.progress = 0;
   state.checkpointIndex = 0;
   state.finished = false;
+  state.jumpY = 0;
+  state.jumpVel = 0;
+  state.rampJumped = false;
   finishPanel.classList.add("hidden");
   hudCheckpoint.textContent = `0/${state.checkpoints.length}`;
   checkpoints.forEach((gate) => {

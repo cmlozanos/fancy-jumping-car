@@ -65,6 +65,8 @@ export function updateCarPhysics({
   const carHalfZ = CONFIG.car.halfZ;
   const carProgressHalf = carHalfZ / track.total;
 
+  let rampContact = false;
+  let shouldJump = false;
   let rampLift = 0;
   ramps.forEach((ramp) => {
     const dz = state.progress - ramp.t;
@@ -75,22 +77,31 @@ export function updateCarPhysics({
     const widthAt = ramp.frontWidth + (ramp.backWidth - ramp.frontWidth) * frac;
     const dx = Math.abs(state.lateral - ramp.lateral);
     if (dx > carHalfX + widthAt * 0.5) return;
-
+    rampContact = true;
     const heightAt = ramp.height * frac;
     rampLift = Math.max(rampLift, heightAt);
-
-    if (frac > 0.9 && state.jumpY <= ramp.height * 0.9 && state.speed > rampJumpSpeedMin) {
-      state.jumpVel = Math.max(
-        state.jumpVel,
-        Math.abs(state.speed) * rampJumpBoostSpeedFactor + rampJumpBoostBase
-      );
+    if (frac > 0.85 && state.speed > rampJumpSpeedMin) {
+      shouldJump = true;
     }
   });
 
   if (rampLift > 0) {
     state.jumpY = Math.max(state.jumpY, rampLift);
     state.jumpVel = Math.max(0, state.jumpVel);
-  } else {
+  }
+
+  if (shouldJump && !state.rampJumped) {
+    state.jumpVel = Math.max(
+      state.jumpVel,
+      Math.abs(state.speed) * rampJumpBoostSpeedFactor + rampJumpBoostBase
+    );
+    state.rampJumped = true;
+  }
+  if (!rampContact && state.jumpY === 0) {
+    state.rampJumped = false;
+  }
+
+  if (rampLift === 0) {
     state.jumpVel += gravity * delta;
     state.jumpY += state.jumpVel * delta;
   }
