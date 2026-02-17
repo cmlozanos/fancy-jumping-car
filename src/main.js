@@ -1073,6 +1073,14 @@ function resetRun() {
   state.finished = false;
   finishPanel.classList.add("hidden");
   hudCheckpoint.textContent = `0/${state.checkpoints.length}`;
+  checkpoints.forEach((gate) => {
+    if (gate?.userData?.bannerMaterial) {
+      gate.userData.bannerMaterial.color.set(0xffffff);
+    }
+  });
+  if (finishGate?.userData?.bannerMaterial) {
+    finishGate.userData.bannerMaterial.color.set(0xffffff);
+  }
 }
 
 bindControls();
