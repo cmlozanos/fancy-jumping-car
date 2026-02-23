@@ -12,9 +12,11 @@
 
       <div id="ui">
         <div id="hud">
+          <div class="hud-level-label" id="hud-level">Nivel 1 &mdash; ¡Arrancamos!</div>
           <div class="hud-item">Tiempo: <span id="hud-time">0.00</span>s</div>
           <div class="hud-item">Velocidad: <span id="hud-speed">0</span> km/h</div>
           <div class="hud-item">Checkpoint: <span id="hud-checkpoint">0/3</span></div>
+          <div class="hud-item">&#11088; <span id="hud-collectible">No</span></div>
           <button id="open-levels" class="ghost" type="button">Niveles</button>
           <label class="color-picker" for="car-color">
             Color coche
@@ -43,6 +45,8 @@
         </div>
       </div>
     </div>
+
+    <div id="death-flash" class="hidden"></div>
 
     <script type="importmap">
       {

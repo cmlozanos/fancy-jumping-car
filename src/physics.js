@@ -28,6 +28,11 @@ export function updatePhysics({ delta, state, input, track, trackOps, world }) {
     track,
     obstacles: world.obstacles,
     trees: world.trees,
+    turboPads: world.turboPads,
+    trampolines: world.trampolines,
+    lavaZones: world.lavaZones,
+    mudZones: world.mudZones,
+    collectible: world.collectible,
     delta,
   });
 

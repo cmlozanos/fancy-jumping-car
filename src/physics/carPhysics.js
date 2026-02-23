@@ -28,7 +28,10 @@ export function updateCarPhysics({
     rampJumpBoostBase,
   } = CONFIG.physics;
 
-  if (input.action && !input.reverse) {
+  if (state.turboActive > 0) {
+    state.turboActive = Math.max(0, state.turboActive - delta);
+    state.speed = CONFIG.turboPads.boostSpeed;
+  } else if (input.action && !input.reverse) {
     state.speed = Math.min(maxSpeed, state.speed + accel * delta);
   } else if (input.reverse) {
     state.speed = Math.max(-maxReverse, state.speed - reverseAccel * delta);
