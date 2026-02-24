@@ -3,25 +3,78 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Fancy Jumping Car - MVP</title>
+    <title>Super Kart Racing - Carreras 3D</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏎️</text></svg>" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <div id="app">
+    <!-- ── TITLE / SPLASH SCREEN ── -->
+    <div id="title-screen">
+      <div class="title-rainbow">🏁</div>
+      <h1 class="title-logo">Super Kart Racing</h1>
+      <p class="title-sub">¡Elige tu personaje y compite!</p>
+      <button id="title-play" class="primary pulse">🏁 JUGAR</button>
+      <button id="title-vehicles" class="ghost">🎮 Elegir Personaje</button>
+    </div>
+
+    <!-- ── CHARACTER SELECTOR ── -->
+    <div id="vehicle-menu" class="panel hidden" role="dialog" aria-label="Selector de personaje">
+      <h1>🎮 Elige tu Personaje</h1>
+      <div class="vehicle-selector-layout">
+        <!-- Left: character grid -->
+        <div id="vehicle-grid" class="vehicle-grid"></div>
+        <!-- Right: 3D live preview -->
+        <div class="vehicle-preview-panel">
+          <div class="preview-header">
+            <span id="preview-char-emoji" class="preview-emoji">🔴</span>
+            <div class="preview-char-info">
+              <div id="preview-char-name" class="preview-name">Mario</div>
+              <div id="preview-char-kart" class="preview-kart">Standard Kart</div>
+            </div>
+          </div>
+          <canvas id="vehicle-preview-canvas"></canvas>
+          <div id="preview-char-desc" class="preview-desc">Selecciona un personaje para ver sus stats.</div>
+          <div id="preview-stats" class="preview-stats">
+            <div class="stat-row"><span>Velocidad</span><div class="stat-bar"><div id="stat-velocidad" class="stat-fill"></div></div></div>
+            <div class="stat-row"><span>Aceleración</span><div class="stat-bar"><div id="stat-aceleracion" class="stat-fill"></div></div></div>
+            <div class="stat-row"><span>Manejo</span><div class="stat-bar"><div id="stat-manejo" class="stat-fill"></div></div></div>
+            <div class="stat-row"><span>Peso</span><div class="stat-bar"><div id="stat-peso" class="stat-fill"></div></div></div>
+          </div>
+        </div>
+      </div>
+      <button id="vehicle-close" class="primary">✅ ¡Listo!</button>
+    </div>
+
+    <!-- ── COUNTDOWN OVERLAY ── -->
+    <div id="countdown-overlay" class="hidden">
+      <span id="countdown-text"></span>
+    </div>
+
+    <div id="app" class="hidden">
       <div id="game" aria-label="Juego"></div>
 
       <div id="ui">
         <div id="hud">
           <div class="hud-level-label" id="hud-level">Nivel 1 &mdash; ¡Arrancamos!</div>
-          <div class="hud-item">Tiempo: <span id="hud-time">0.00</span>s</div>
-          <div class="hud-item">Velocidad: <span id="hud-speed">0</span> km/h</div>
-          <div class="hud-item">Checkpoint: <span id="hud-checkpoint">0/3</span></div>
-          <div class="hud-item">&#11088; <span id="hud-collectible">No</span></div>
-          <button id="open-levels" class="ghost" type="button">Niveles</button>
-          <label class="color-picker" for="car-color">
-            Color coche
-            <input id="car-color" type="color" value="#ff2d2d" aria-label="Color del coche" />
-          </label>
+          <div class="hud-row">
+            <div class="hud-item">Tiempo: <span id="hud-time">0.00</span>s</div>
+            <div class="hud-item">Velocidad: <span id="hud-speed">0</span> km/h</div>
+            <div class="hud-item">Checkpoint: <span id="hud-checkpoint">0/3</span></div>
+            <div class="hud-item">&#11088; <span id="hud-collectible">No</span></div>
+          </div>
+          <!-- PROGRESS BAR -->
+          <div id="progress-bar-container">
+            <div id="progress-bar-fill"></div>
+            <div id="progress-bar-car">🏎️</div>
+          </div>
+          <div class="hud-buttons">
+            <button id="open-levels" class="ghost" type="button">🏆 Circuitos</button>
+            <button id="open-character" class="ghost" type="button">🎮 Personaje</button>
+            <label class="color-picker" for="car-color">
+              Color
+              <input id="car-color" type="color" value="#ff2d2d" aria-label="Color del coche" />
+            </label>
+          </div>
         </div>
 
         <div id="controls">
@@ -32,14 +85,15 @@
         </div>
 
         <div id="finish" class="panel hidden">
-          <h1>Vuelta completada</h1>
+          <h1>🏁 ¡Carrera completada!</h1>
           <p>Tiempo: <span id="finish-time">0.00</span>s</p>
-          <button id="finish-next" class="primary">Siguiente nivel</button>
-          <button id="finish-restart" class="primary">Reiniciar</button>
+          <button id="finish-next" class="primary">▶ Siguiente circuito</button>
+          <button id="finish-restart" class="primary">🔄 Reiniciar</button>
+          <button id="finish-character" class="ghost">🎮 Cambiar personaje</button>
         </div>
 
-        <div id="level-menu" class="panel hidden" role="dialog" aria-label="Selector de niveles">
-          <h1>Selecciona nivel</h1>
+        <div id="level-menu" class="panel hidden" role="dialog" aria-label="Selector de circuitos">
+          <h1>🏆 Selecciona circuito</h1>
           <div id="level-grid" class="level-grid"></div>
           <button id="level-close" class="primary">Cerrar</button>
         </div>
@@ -56,6 +110,6 @@
         }
       }
     </script>
-    <script type="module" src="src/main.js?v=4"></script>
+    <script type="module" src="src/main.js?v=7"></script>
   </body>
 </html>

@@ -3,6 +3,9 @@ import { CONFIG } from "../constants.js";
 export function updateWorldPhysics({ state, track, obstacles, trees, turboPads, trampolines, lavaZones, mudZones, collectible, delta }) {
   const carHalfX = CONFIG.car.halfX;
   const carProgressHalf = CONFIG.car.halfZ / track.total;
+  state.collisionHit = false;
+  state.turboJustActivated = false;
+  state.trampolineJustLaunched = false;
   obstacles.forEach((obstacle) => {
     if (state.jumpY > obstacle.height * 0.6) return;
     const dx = Math.abs(state.lateral - obstacle.lateral);
@@ -14,10 +17,13 @@ export function updateWorldPhysics({ state, track, obstacles, trees, turboPads, 
       state.progress = Math.max(0, state.progress - CONFIG.obstacles.progressKick);
       state.speed = Math.min(state.speed, 0);
       state.speed -= CONFIG.obstacles.reverse * delta;
+      state.collisionHit = true;
     }
   });
 
   trees.forEach((tree) => {
+    // Trees are ~5 u tall; allow the car to fly over the trunk without collision
+    if (state.jumpY > 2.5) return;
     const dx = Math.abs(state.lateral - tree.lateral);
     const dz = Math.abs(state.progress - tree.t);
     if (dx < carHalfX + tree.lateralHalf && dz < carProgressHalf + tree.progressHalf) {
@@ -27,9 +33,11 @@ export function updateWorldPhysics({ state, track, obstacles, trees, turboPads, 
       state.progress = Math.max(0, state.progress - CONFIG.trees.progressKick);
       state.speed = Math.min(state.speed, 0);
       state.speed -= CONFIG.trees.reverse * delta;
+      state.collisionHit = true;
     }
   });
 
+  const prevTurbo = state.turboActive;
   (turboPads ?? []).forEach((pad) => {
     const dx = Math.abs(state.lateral - pad.lateral);
     const dz = Math.abs(state.progress - pad.t);
@@ -37,6 +45,7 @@ export function updateWorldPhysics({ state, track, obstacles, trees, turboPads, 
       state.turboActive = CONFIG.turboPads.boostDuration;
     }
   });
+  if (state.turboActive > 0 && prevTurbo <= 0) state.turboJustActivated = true;
 
   (trampolines ?? []).forEach((tramp) => {
     const dx = Math.abs(state.lateral - tramp.lateral);
@@ -45,6 +54,7 @@ export function updateWorldPhysics({ state, track, obstacles, trees, turboPads, 
       if (!tramp.launched && state.jumpY < 1.0) {
         state.jumpVel = CONFIG.trampolines.jumpVel;
         tramp.launched = true;
+        state.trampolineJustLaunched = true;
       }
     } else {
       tramp.launched = false;

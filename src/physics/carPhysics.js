@@ -100,7 +100,9 @@ export function updateCarPhysics({
     );
     state.rampJumped = true;
   }
-  if (!rampContact && state.jumpY === 0) {
+  // Reset rampJumped as soon as the car leaves the ramp surface,
+  // regardless of whether it has landed yet, so consecutive ramps both fire.
+  if (!rampContact) {
     state.rampJumped = false;
   }
 

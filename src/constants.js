@@ -14,14 +14,14 @@ export const CONFIG = {
     /* ── MUNDO 1: PRADERA ── */
     {
       key: "pradera-1", label: "¡Arrancamos!", world: "Pradera",
-      groundColor: 0x7aa96b, thumbColor: "#6ea85e",
+      groundColor: 0x7aa96b, skyColor: 0x7aa2ff, thumbColor: "#6ea85e",
       trackLength: 640, obstacleCount: 2, rampCount: 1, treeCount: 8,
       collectible: { t: 0.5, lateral: 4.0 },
       turboPads: [], trampolines: [], lavaZones: [], mudZones: [],
     },
     {
       key: "pradera-2", label: "Primer Charco", world: "Pradera",
-      groundColor: 0x6fa05e, thumbColor: "#5d9450",
+      groundColor: 0x6fa05e, skyColor: 0x7aa2ff, thumbColor: "#5d9450",
       trackLength: 660, obstacleCount: 3, rampCount: 1, treeCount: 10,
       collectible: { t: 0.35, lateral: -4.0 },
       turboPads: [], trampolines: [], lavaZones: [],
@@ -29,7 +29,7 @@ export const CONFIG = {
     },
     {
       key: "pradera-3", label: "Turbo Bebé", world: "Pradera",
-      groundColor: 0x83b56e, thumbColor: "#72a45e",
+      groundColor: 0x83b56e, skyColor: 0x7aa2ff, thumbColor: "#72a45e",
       trackLength: 680, obstacleCount: 3, rampCount: 1, treeCount: 10,
       collectible: { t: 0.6, lateral: 4.2 },
       turboPads: [{ t: 0.55, lateral: 0 }],
@@ -37,7 +37,7 @@ export const CONFIG = {
     },
     {
       key: "pradera-4", label: "Salto de Fe", world: "Pradera",
-      groundColor: 0x75a865, thumbColor: "#649857",
+      groundColor: 0x75a865, skyColor: 0x7aa2ff, thumbColor: "#649857",
       trackLength: 700, obstacleCount: 3, rampCount: 2, treeCount: 12,
       collectible: { t: 0.4, lateral: -4.0 },
       turboPads: [], trampolines: [{ t: 0.65, lateral: 0 }],
@@ -45,7 +45,7 @@ export const CONFIG = {
     },
     {
       key: "pradera-5", label: "Lava Tímida", world: "Pradera",
-      groundColor: 0x89b270, thumbColor: "#78a060",
+      groundColor: 0x89b270, skyColor: 0x7aa2ff, thumbColor: "#78a060",
       trackLength: 720, obstacleCount: 4, rampCount: 2, treeCount: 12,
       collectible: { t: 0.3, lateral: 4.0 },
       turboPads: [{ t: 0.5, lateral: 0 }],
@@ -56,7 +56,7 @@ export const CONFIG = {
     /* ── MUNDO 2: DESIERTO ── */
     {
       key: "desierto-1", label: "Dunas Doradas", world: "Desierto",
-      groundColor: 0xc8a850, thumbColor: "#b89440",
+      groundColor: 0xc8a850, skyColor: 0xe8c87a, thumbColor: "#b89440",
       trackLength: 760, obstacleCount: 4, rampCount: 2, treeCount: 6,
       collectible: { t: 0.45, lateral: -4.5 },
       turboPads: [], trampolines: [], lavaZones: [],
@@ -64,7 +64,7 @@ export const CONFIG = {
     },
     {
       key: "desierto-2", label: "Tormenta de Arena", world: "Desierto",
-      groundColor: 0xd4a840, thumbColor: "#c09030",
+      groundColor: 0xd4a840, skyColor: 0xe8c87a, thumbColor: "#c09030",
       trackLength: 780, obstacleCount: 5, rampCount: 2, treeCount: 6,
       collectible: { t: 0.55, lateral: 4.5 },
       turboPads: [{ t: 0.4, lateral: 0 }],
@@ -73,7 +73,7 @@ export const CONFIG = {
     },
     {
       key: "desierto-3", label: "Oasis Turbinado", world: "Desierto",
-      groundColor: 0xbe9c3e, thumbColor: "#a88830",
+      groundColor: 0xbe9c3e, skyColor: 0xe8c87a, thumbColor: "#a88830",
       trackLength: 800, obstacleCount: 5, rampCount: 3, treeCount: 8,
       collectible: { t: 0.38, lateral: -4.5 },
       turboPads: [{ t: 0.45, lateral: 0 }, { t: 0.72, lateral: 0 }],
@@ -82,7 +82,7 @@ export const CONFIG = {
     },
     {
       key: "desierto-4", label: "El Gran Salto", world: "Desierto",
-      groundColor: 0xc29238, thumbColor: "#ac7e28",
+      groundColor: 0xc29238, skyColor: 0xe8c87a, thumbColor: "#ac7e28",
       trackLength: 820, obstacleCount: 5, rampCount: 3, treeCount: 8,
       collectible: { t: 0.5, lateral: 4.5 },
       turboPads: [], trampolines: [{ t: 0.55, lateral: 0 }, { t: 0.8, lateral: 0 }],
@@ -90,7 +90,7 @@ export const CONFIG = {
     },
     {
       key: "desierto-5", label: "Lava en el Desierto", world: "Desierto",
-      groundColor: 0xb88830, thumbColor: "#a07020",
+      groundColor: 0xb88830, skyColor: 0xe8c87a, thumbColor: "#a07020",
       trackLength: 840, obstacleCount: 6, rampCount: 3, treeCount: 8,
       collectible: { t: 0.42, lateral: -4.5 },
       turboPads: [{ t: 0.6, lateral: 0 }],
@@ -101,7 +101,7 @@ export const CONFIG = {
     /* ── MUNDO 3: MONTAÑA ── */
     {
       key: "montana-1", label: "Camino Rocoso", world: "Montaña",
-      groundColor: 0x8a7a6a, thumbColor: "#7a6a5a",
+      groundColor: 0x8a7a6a, skyColor: 0x9ab8d0, thumbColor: "#7a6a5a",
       trackLength: 860, obstacleCount: 5, rampCount: 3, treeCount: 14,
       collectible: { t: 0.47, lateral: 4.8 },
       turboPads: [{ t: 0.55, lateral: 0 }],
@@ -110,7 +110,7 @@ export const CONFIG = {
     },
     {
       key: "montana-2", label: "Niebla y Barro", world: "Montaña",
-      groundColor: 0x7a6e60, thumbColor: "#6a5e50",
+      groundColor: 0x7a6e60, skyColor: 0x9ab8d0, thumbColor: "#6a5e50",
       trackLength: 880, obstacleCount: 6, rampCount: 3, treeCount: 16,
       collectible: { t: 0.35, lateral: -4.8 },
       turboPads: [], trampolines: [], lavaZones: [],
@@ -118,7 +118,7 @@ export const CONFIG = {
     },
     {
       key: "montana-3", label: "El Volcancito", world: "Montaña",
-      groundColor: 0x906858, thumbColor: "#7a5848",
+      groundColor: 0x906858, skyColor: 0x9ab8d0, thumbColor: "#7a5848",
       trackLength: 880, obstacleCount: 6, rampCount: 3, treeCount: 14,
       collectible: { t: 0.42, lateral: 4.8 },
       turboPads: [{ t: 0.48, lateral: 0 }],
@@ -128,7 +128,7 @@ export const CONFIG = {
     },
     {
       key: "montana-4", label: "Turbos en la Cima", world: "Montaña",
-      groundColor: 0x988070, thumbColor: "#887060",
+      groundColor: 0x988070, skyColor: 0x9ab8d0, thumbColor: "#887060",
       trackLength: 900, obstacleCount: 6, rampCount: 3, treeCount: 16,
       collectible: { t: 0.5, lateral: -4.8 },
       turboPads: [{ t: 0.42, lateral: 0 }, { t: 0.68, lateral: 0 }],
@@ -137,7 +137,7 @@ export const CONFIG = {
     },
     {
       key: "montana-5", label: "Saltando a las Nubes", world: "Montaña",
-      groundColor: 0xa08878, thumbColor: "#907868",
+      groundColor: 0xa08878, skyColor: 0x9ab8d0, thumbColor: "#907868",
       trackLength: 920, obstacleCount: 6, rampCount: 4, treeCount: 16,
       collectible: { t: 0.38, lateral: 4.8 },
       turboPads: [{ t: 0.55, lateral: 0 }],
@@ -149,7 +149,7 @@ export const CONFIG = {
     /* ── MUNDO 4: VOLCÁN ── */
     {
       key: "volcan-1", label: "Tierra en Llamas", world: "Volcán",
-      groundColor: 0x7a3a20, thumbColor: "#6a2a10",
+      groundColor: 0x7a3a20, skyColor: 0x4a1a0a, thumbColor: "#6a2a10",
       trackLength: 940, obstacleCount: 6, rampCount: 3, treeCount: 10,
       collectible: { t: 0.45, lateral: -5.0 },
       turboPads: [{ t: 0.5, lateral: 0 }],
@@ -158,7 +158,7 @@ export const CONFIG = {
     },
     {
       key: "volcan-2", label: "Ríos de Lava", world: "Volcán",
-      groundColor: 0x8a3c22, thumbColor: "#7a2c12",
+      groundColor: 0x8a3c22, skyColor: 0x4a1a0a, thumbColor: "#7a2c12",
       trackLength: 960, obstacleCount: 7, rampCount: 3, treeCount: 10,
       collectible: { t: 0.38, lateral: 5.0 },
       turboPads: [],
@@ -168,7 +168,7 @@ export const CONFIG = {
     },
     {
       key: "volcan-3", label: "¡Todo Turbo!", world: "Volcán",
-      groundColor: 0x6e3018, thumbColor: "#5e2008",
+      groundColor: 0x6e3018, skyColor: 0x4a1a0a, thumbColor: "#5e2008",
       trackLength: 980, obstacleCount: 7, rampCount: 4, treeCount: 10,
       collectible: { t: 0.5, lateral: -5.0 },
       turboPads: [{ t: 0.38, lateral: 0 }, { t: 0.62, lateral: 0 }, { t: 0.82, lateral: 0 }],
@@ -178,7 +178,7 @@ export const CONFIG = {
     },
     {
       key: "volcan-4", label: "El Infierno Saltarín", world: "Volcán",
-      groundColor: 0x7c3418, thumbColor: "#6c2808",
+      groundColor: 0x7c3418, skyColor: 0x4a1a0a, thumbColor: "#6c2808",
       trackLength: 1000, obstacleCount: 7, rampCount: 4, treeCount: 8,
       collectible: { t: 0.42, lateral: 5.0 },
       turboPads: [{ t: 0.45, lateral: 0 }],
@@ -188,7 +188,7 @@ export const CONFIG = {
     },
     {
       key: "volcan-5", label: "El Jefe del Volcán", world: "Volcán",
-      groundColor: 0x882a10, thumbColor: "#781a00",
+      groundColor: 0x882a10, skyColor: 0x4a1a0a, thumbColor: "#781a00",
       trackLength: 1020, obstacleCount: 8, rampCount: 4, treeCount: 6,
       collectible: { t: 0.35, lateral: -5.0 },
       turboPads: [{ t: 0.4, lateral: 0 }, { t: 0.72, lateral: 0 }],
@@ -200,7 +200,7 @@ export const CONFIG = {
     /* ── MUNDO 5: ÁRTICO ── */
     {
       key: "artico-1", label: "Nieve y Hielo", world: "Ártico",
-      groundColor: 0xb8d4e8, thumbColor: "#a8c4d8",
+      groundColor: 0xb8d4e8, skyColor: 0xd0e8f8, thumbColor: "#a8c4d8",
       trackLength: 960, obstacleCount: 6, rampCount: 3, treeCount: 14,
       collectible: { t: 0.48, lateral: 5.0 },
       turboPads: [{ t: 0.55, lateral: 0 }],
@@ -209,7 +209,7 @@ export const CONFIG = {
     },
     {
       key: "artico-2", label: "Ventisca", world: "Ártico",
-      groundColor: 0xa8c8e0, thumbColor: "#98b8d0",
+      groundColor: 0xa8c8e0, skyColor: 0xd0e8f8, thumbColor: "#98b8d0",
       trackLength: 1000, obstacleCount: 7, rampCount: 3, treeCount: 16,
       collectible: { t: 0.38, lateral: -5.0 },
       turboPads: [], trampolines: [{ t: 0.6, lateral: 0 }],
@@ -217,7 +217,7 @@ export const CONFIG = {
     },
     {
       key: "artico-3", label: "Salto del Oso Polar", world: "Ártico",
-      groundColor: 0xc0d8ec, thumbColor: "#b0c8dc",
+      groundColor: 0xc0d8ec, skyColor: 0xd0e8f8, thumbColor: "#b0c8dc",
       trackLength: 1020, obstacleCount: 7, rampCount: 4, treeCount: 16,
       collectible: { t: 0.45, lateral: 5.0 },
       turboPads: [{ t: 0.42, lateral: 0 }],
@@ -226,7 +226,7 @@ export const CONFIG = {
     },
     {
       key: "artico-4", label: "La Tormenta Perfecta", world: "Ártico",
-      groundColor: 0x98b8d5, thumbColor: "#88a8c5",
+      groundColor: 0x98b8d5, skyColor: 0xd0e8f8, thumbColor: "#88a8c5",
       trackLength: 1060, obstacleCount: 8, rampCount: 4, treeCount: 18,
       collectible: { t: 0.4, lateral: -5.0 },
       turboPads: [{ t: 0.48, lateral: 0 }, { t: 0.74, lateral: 0 }],
@@ -235,7 +235,7 @@ export const CONFIG = {
     },
     {
       key: "artico-5", label: "El Polo Sur Turbinado", world: "Ártico",
-      groundColor: 0x88adc8, thumbColor: "#789db8",
+      groundColor: 0x88adc8, skyColor: 0xd0e8f8, thumbColor: "#789db8",
       trackLength: 1080, obstacleCount: 8, rampCount: 4, treeCount: 18,
       collectible: { t: 0.35, lateral: 5.0 },
       turboPads: [{ t: 0.4, lateral: 0 }, { t: 0.65, lateral: 0 }, { t: 0.85, lateral: 0 }],
@@ -246,7 +246,7 @@ export const CONFIG = {
     /* ── MUNDO 6: ESPACIO ── */
     {
       key: "espacio-1", label: "Despegue Lunar", world: "Espacio",
-      groundColor: 0x3a3a5a, thumbColor: "#2a2a4a",
+      groundColor: 0x3a3a5a, skyColor: 0x0a0a1e, thumbColor: "#2a2a4a",
       trackLength: 1000, obstacleCount: 6, rampCount: 3, treeCount: 6,
       collectible: { t: 0.5, lateral: -5.5 },
       turboPads: [{ t: 0.55, lateral: 0 }],
@@ -255,7 +255,7 @@ export const CONFIG = {
     },
     {
       key: "espacio-2", label: "Asteroide Salvaje", world: "Espacio",
-      groundColor: 0x2e2e50, thumbColor: "#1e1e40",
+      groundColor: 0x2e2e50, skyColor: 0x0a0a1e, thumbColor: "#1e1e40",
       trackLength: 1040, obstacleCount: 7, rampCount: 4, treeCount: 6,
       collectible: { t: 0.42, lateral: 5.5 },
       turboPads: [{ t: 0.45, lateral: 0 }, { t: 0.7, lateral: 0 }],
@@ -264,7 +264,7 @@ export const CONFIG = {
     },
     {
       key: "espacio-3", label: "Caída Libre", world: "Espacio",
-      groundColor: 0x1e1e3c, thumbColor: "#0e0e2c",
+      groundColor: 0x1e1e3c, skyColor: 0x0a0a1e, thumbColor: "#0e0e2c",
       trackLength: 1080, obstacleCount: 7, rampCount: 4, treeCount: 4,
       collectible: { t: 0.38, lateral: -5.5 },
       turboPads: [{ t: 0.42, lateral: 0 }],
@@ -274,7 +274,7 @@ export const CONFIG = {
     },
     {
       key: "espacio-4", label: "Galaxia en Llamas", world: "Espacio",
-      groundColor: 0x28183c, thumbColor: "#18082c",
+      groundColor: 0x28183c, skyColor: 0x0a0a1e, thumbColor: "#18082c",
       trackLength: 1100, obstacleCount: 8, rampCount: 4, treeCount: 4,
       collectible: { t: 0.45, lateral: 5.5 },
       turboPads: [{ t: 0.4, lateral: 0 }, { t: 0.65, lateral: 0 }],
@@ -284,7 +284,7 @@ export const CONFIG = {
     },
     {
       key: "espacio-5", label: "El Jefe del Universo", world: "Espacio",
-      groundColor: 0x1a0a2e, thumbColor: "#0a001e",
+      groundColor: 0x1a0a2e, skyColor: 0x0a0a1e, thumbColor: "#0a001e",
       trackLength: 1200, obstacleCount: 8, rampCount: 4, treeCount: 4,
       collectible: { t: 0.35, lateral: -5.5 },
       turboPads: [{ t: 0.38, lateral: 0 }, { t: 0.58, lateral: 0 }, { t: 0.78, lateral: 0 }],
@@ -366,7 +366,7 @@ export const CONFIG = {
     lateralDamping: 0.1,
   },
   collectible: {
-    height: 3.8,
+    height: 1.5,
     rotateSpeed: 2.5,
   },
   turboPads: {
@@ -395,4 +395,25 @@ export const CONFIG = {
     maxSpeed: 7,
     color: 0x5c3d1e,
   },
+  karts: [
+    { file: "kart-oopi.glb", label: "Oopi", color: "#ff4444" },
+    { file: "kart-oobi.glb", label: "Oobi", color: "#4488ff" },
+    { file: "kart-oodi.glb", label: "Oodi", color: "#44dd44" },
+    { file: "kart-ooli.glb", label: "Ooli", color: "#ff88ff" },
+    { file: "kart-oozi.glb", label: "Oozi", color: "#ffaa22" },
+  ],
+  characters: [
+    { id: "mario",      name: "Mario",       emoji: "🔴", vehicle: "kart",    color: "#e8231a", kart: "Standard Kart",  stats: { velocidad: 4, peso: 3, aceleracion: 3, manejo: 3 }, desc: "El fontanero más famoso. Todo terreno, para iniciados y expertos." },
+    { id: "luigi",      name: "Luigi",       emoji: "💚", vehicle: "kart",    color: "#1e8c1e", kart: "Pipe Frame",     stats: { velocidad: 4, peso: 3, aceleracion: 4, manejo: 3 }, desc: "El hermano verde. Ligeramente más rápido en rectas largas." },
+    { id: "peach",      name: "Peach",       emoji: "👑", vehicle: "mini",    color: "#ff88cc", kart: "Biddybuggy",    stats: { velocidad: 3, peso: 2, aceleracion: 5, manejo: 5 }, desc: "La princesa del Reino Champiñón. Pequeña, ágil, difícil de parar." },
+    { id: "toad",       name: "Toad",        emoji: "🍄", vehicle: "mini",    color: "#4488ff", kart: "Biddybuggy",    stats: { velocidad: 3, peso: 1, aceleracion: 5, manejo: 5 }, desc: "El más ligero de todos. Aceleración brutal, domina las curvas." },
+    { id: "yoshi",      name: "Yoshi",       emoji: "🦕", vehicle: "buggy",   color: "#44cc44", kart: "Wild Wiggler",  stats: { velocidad: 4, peso: 2, aceleracion: 4, manejo: 4 }, desc: "El dinosaurio amigo de Mario. Ligero, equilibrado y divertido." },
+    { id: "wario",      name: "Wario",       emoji: "💛", vehicle: "dragster",color: "#ffcc00", kart: "Biddybuggy",    stats: { velocidad: 5, peso: 5, aceleracion: 2, manejo: 2 }, desc: "El antihéroe robusto. Devastador en rectas, pesado en curvas." },
+    { id: "bowser",     name: "Bowser",       emoji: "🐢", vehicle: "monster", color: "#cc6600", kart: "Standard ATV", stats: { velocidad: 5, peso: 5, aceleracion: 2, manejo: 2 }, desc: "El rey de los Koopa. Velocidad máxima, manejo de experto." },
+    { id: "rosalina",   name: "Rosalina",    emoji: "⭐", vehicle: "sports",  color: "#66aaff", kart: "Pipe Frame",    stats: { velocidad: 5, peso: 4, aceleracion: 3, manejo: 3 }, desc: "La guardiana de las estrellas. Elegante, veloz y precisa." },
+    { id: "donkeykong", name: "Donkey Kong", emoji: "🦍", vehicle: "f1",      color: "#884400", kart: "Standard Kart", stats: { velocidad: 4, peso: 5, aceleracion: 3, manejo: 2 }, desc: "El rey del congo. Fuerza bruta y velocidad punta impresionante." },
+    { id: "waluigi",    name: "Waluigi",     emoji: "🎭", vehicle: "f1",      color: "#880088", kart: "Wild Wiggler",  stats: { velocidad: 4, peso: 3, aceleracion: 4, manejo: 3 }, desc: "El rival estirado de Luigi. Ágil y con un estilo único." },
+    { id: "koopa",      name: "Koopa",       emoji: "🐢", vehicle: "buggy",   color: "#88cc44", kart: "Biddybuggy",   stats: { velocidad: 3, peso: 2, aceleracion: 5, manejo: 5 }, desc: "El Koopa Troopa atleta. Ultraligero y con reflejos increíbles." },
+    { id: "daisy",      name: "Daisy",       emoji: "🌼", vehicle: "mini",    color: "#ffaa00", kart: "Pipe Frame",    stats: { velocidad: 3, peso: 2, aceleracion: 5, manejo: 4 }, desc: "La princesa de Sarasa. Enérgica, competitiva e imprevisible." },
+  ],
 };
