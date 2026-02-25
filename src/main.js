@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { updatePhysics } from "./physics.js";
 import { CONFIG } from "./constants.js";
+import { getPortraitDataURL, drawCharacterPortrait } from "./portraits.js";
 
 /* ─── DOM REFERENCES ─── */
 const container = document.getElementById("game");
@@ -142,8 +143,8 @@ car.userData = {
 car.position.y = CONFIG.car.baseY;
 car.castShadow = true;
 scene.add(car);
-applyCarColor(state.carColor);
-if (carColorInput) carColorInput.value = savedCarColor;
+// Color per-character is baked into buildCar — color picker is disabled
+if (carColorInput) carColorInput.closest('label')?.style && (carColorInput.closest('label').style.display = 'none');
 
 /* ─── TURBO GLOW / AURA (B5/U2) ─── */
 const turboGlow = new THREE.Mesh(
@@ -630,245 +631,334 @@ function buildTrack(texture, level) {
 
 function buildCar(vehicleType, color) {
   const type = vehicleType || "kart";
-  const col = color ? new THREE.Color(color) : new THREE.Color(0xff4d4d);
-  const bodyMat = new THREE.MeshStandardMaterial({ color: col, roughness: 0.5, metalness: 0.15 });
-  const darkMat = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.8 });
-  const trimMat = new THREE.MeshStandardMaterial({ color: 0x3a3a3a, roughness: 0.7, metalness: 0.2 });
-  const glassMat = new THREE.MeshStandardMaterial({ color: 0x88c8ff, transparent: true, opacity: 0.45, roughness: 0.2, metalness: 0.1 });
-  const accentMat = new THREE.MeshStandardMaterial({ color: col.clone().multiplyScalar(0.6), roughness: 0.6 });
+  const col  = new THREE.Color(color || 0xff4d4d);
 
-  const group = new THREE.Group();
+  // ── Shared material palette ──
+  const bodyMat  = new THREE.MeshStandardMaterial({ color: col, roughness: 0.3, metalness: 0.3 });
+  const darkMat  = new THREE.MeshStandardMaterial({ color: 0x0e0e0e, roughness: 0.9 });
+  const chromeMat= new THREE.MeshStandardMaterial({ color: 0xd0d0d0, roughness: 0.08, metalness: 1.0 });
+  const glassMat = new THREE.MeshStandardMaterial({ color: 0x99ddff, transparent: true, opacity: 0.35, roughness: 0.0, metalness: 0.5 });
+  const darkBody = new THREE.MeshStandardMaterial({ color: col.clone().multiplyScalar(0.42), roughness: 0.55 });
+  const lightMat = new THREE.MeshStandardMaterial({ color: 0xffffcc, emissive: 0xffffaa, emissiveIntensity: 1.4, roughness: 0.15 });
+  const redLightMat = new THREE.MeshStandardMaterial({ color: 0xff2200, emissive: 0xff1100, emissiveIntensity: 1.2, roughness: 0.15 });
+  const whiteMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.6 });
+
+  const group  = new THREE.Group();
   const wheels = [];
-  let wheelRadius = 0.55;
+  let wheelRadius = 0.5;
 
-  function addWheel(x, y, z, r) {
-    const wg = new THREE.CylinderGeometry(r, r, 0.5, 12);
-    wg.rotateZ(Math.PI / 2);
-    const w = new THREE.Mesh(wg, darkMat);
-    w.position.set(x, y, z);
-    group.add(w);
-    wheels.push(w);
+  function addWheel(x, y, z, r, wide = 0.54) {
+    const tireGeo = new THREE.CylinderGeometry(r, r, wide, 14);
+    tireGeo.rotateZ(Math.PI / 2);
+    const tire = new THREE.Mesh(tireGeo, darkMat);
+    tire.position.set(x, y, z);
+    group.add(tire);
+    wheels.push(tire);
+    // Outer hubcap
+    const hubGeo = new THREE.CylinderGeometry(r * 0.54, r * 0.54, 0.08, 8);
+    hubGeo.rotateZ(Math.PI / 2);
+    const hub = new THREE.Mesh(hubGeo, chromeMat);
+    hub.position.set(x < 0 ? x - wide * 0.5 : x + wide * 0.5, y, z);
+    group.add(hub);
   }
 
-  if (type === "sports") {
-    // Low, sleek sports car with rear spoiler
-    const body = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.7, 5.0), bodyMat);
-    body.position.y = 0.8;
-    group.add(body);
-    const hood = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.3, 1.8), bodyMat);
-    hood.position.set(0, 1.2, 1.2);
-    group.add(hood);
-    const cab = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.6, 1.6), glassMat);
-    cab.position.set(0, 1.3, -0.3);
-    group.add(cab);
-    const spoiler = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.08, 0.6), accentMat);
-    spoiler.position.set(0, 1.6, -2.2);
-    group.add(spoiler);
-    const spoilerStand1 = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.5, 0.12), trimMat);
-    spoilerStand1.position.set(-0.9, 1.3, -2.2);
-    const spoilerStand2 = spoilerStand1.clone();
-    spoilerStand2.position.x = 0.9;
-    group.add(spoilerStand1, spoilerStand2);
-    wheelRadius = 0.45;
-    addWheel(-1.3, 0.45, 1.5, 0.45);
-    addWheel(1.3, 0.45, 1.5, 0.45);
-    addWheel(-1.3, 0.45, -1.6, 0.45);
-    addWheel(1.3, 0.45, -1.6, 0.45);
-    group.scale.setScalar(0.75);
-  } else if (type === "monster") {
-    // High chassis monster truck with big wheels
-    const body = new THREE.Mesh(new THREE.BoxGeometry(3.2, 1.2, 4.0), bodyMat);
-    body.position.y = 2.8;
-    group.add(body);
-    const cab = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.9, 2.0), bodyMat);
-    cab.position.set(0, 3.8, -0.3);
-    group.add(cab);
-    const glass = new THREE.Mesh(new THREE.BoxGeometry(2.3, 0.65, 1.8), glassMat);
-    glass.position.set(0, 3.85, -0.3);
-    group.add(glass);
-    const bumper = new THREE.Mesh(new THREE.BoxGeometry(3.0, 0.6, 0.5), trimMat);
-    bumper.position.set(0, 2.2, 2.2);
-    group.add(bumper);
-    const exhaust1 = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 1.0, 6), trimMat);
-    exhaust1.position.set(-1.2, 3.5, -2.1);
-    const exhaust2 = exhaust1.clone();
-    exhaust2.position.x = 1.2;
-    group.add(exhaust1, exhaust2);
-    wheelRadius = 1.1;
-    addWheel(-1.7, 1.1, 1.5, 1.1);
-    addWheel(1.7, 1.1, 1.5, 1.1);
-    addWheel(-1.7, 1.1, -1.5, 1.1);
-    addWheel(1.7, 1.1, -1.5, 1.1);
-    group.scale.setScalar(0.7);
-  } else if (type === "dragster") {
-    // Long, narrow dragster with exposed engine
-    const body = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.6, 6.0), bodyMat);
-    body.position.y = 1.0;
-    group.add(body);
-    const noseCone = new THREE.Mesh(new THREE.ConeGeometry(0.8, 1.5, 6), bodyMat);
-    noseCone.rotation.x = Math.PI / 2;
-    noseCone.position.set(0, 1.0, 3.6);
-    group.add(noseCone);
-    const seat = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.8, 1.0), trimMat);
-    seat.position.set(0, 1.5, -0.5);
-    group.add(seat);
-    const engine = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.9, 1.2), accentMat);
-    engine.position.set(0, 1.5, -2.0);
-    group.add(engine);
-    const pipe1 = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.12, 1.2, 6), trimMat);
-    pipe1.position.set(-0.5, 2.1, -2.0);
-    const pipe2 = pipe1.clone();
-    pipe2.position.x = 0.5;
-    group.add(pipe1, pipe2);
-    wheelRadius = 0.5;
-    addWheel(-0.9, 0.5, 2.0, 0.4);
-    addWheel(0.9, 0.5, 2.0, 0.4);
-    addWheel(-1.1, 0.7, -2.2, 0.7);
-    addWheel(1.1, 0.7, -2.2, 0.7);
-    group.scale.setScalar(0.7);
-  } else if (type === "buggy") {
-    // Open frame buggy with roll cage
-    const chassis = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.4, 3.8), bodyMat);
-    chassis.position.y = 1.4;
-    group.add(chassis);
-    const seat = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.6, 0.8), trimMat);
-    seat.position.set(0, 1.9, -0.2);
-    group.add(seat);
-    // Roll cage bars
-    const barMat = new THREE.MeshStandardMaterial({ color: 0xcccccc, roughness: 0.4, metalness: 0.5 });
-    const barGeo = new THREE.CylinderGeometry(0.06, 0.06, 2.0, 4);
-    const bar1 = new THREE.Mesh(barGeo, barMat);
-    bar1.position.set(-1.0, 2.4, -0.2);
-    const bar2 = bar1.clone();
-    bar2.position.x = 1.0;
-    group.add(bar1, bar2);
-    const topBar = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 2.0, 4), barMat);
-    topBar.rotation.z = Math.PI / 2;
-    topBar.position.set(0, 3.4, -0.2);
-    group.add(topBar);
-    const fender = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.15, 1.0), accentMat);
-    fender.position.set(0, 1.7, 1.5);
-    group.add(fender);
-    wheelRadius = 0.65;
-    addWheel(-1.3, 0.65, 1.4, 0.65);
-    addWheel(1.3, 0.65, 1.4, 0.65);
-    addWheel(-1.3, 0.65, -1.4, 0.65);
-    addWheel(1.3, 0.65, -1.4, 0.65);
-    group.scale.setScalar(0.75);
-  } else if (type === "f1") {
-    // Ultra-low F1 racer with front & rear wings
-    const body = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.5, 4.8), bodyMat);
-    body.position.y = 0.6;
-    group.add(body);
-    const nose = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.3, 1.2), bodyMat);
-    nose.position.set(0, 0.5, 2.8);
-    group.add(nose);
-    const frontWing = new THREE.Mesh(new THREE.BoxGeometry(3.0, 0.06, 0.6), accentMat);
-    frontWing.position.set(0, 0.35, 3.0);
-    group.add(frontWing);
-    const rearWing = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.06, 0.5), accentMat);
-    rearWing.position.set(0, 1.4, -2.0);
-    group.add(rearWing);
-    const wingStand1 = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.7, 0.08), trimMat);
-    wingStand1.position.set(-0.6, 1.0, -2.0);
-    const wingStand2 = wingStand1.clone();
-    wingStand2.position.x = 0.6;
-    group.add(wingStand1, wingStand2);
-    const cockpit = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.5, 1.0), glassMat);
-    cockpit.position.set(0, 1.0, 0);
-    group.add(cockpit);
-    const intake = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.5, 0.4), bodyMat);
-    intake.position.set(0, 1.3, -0.2);
-    group.add(intake);
-    wheelRadius = 0.4;
-    addWheel(-1.4, 0.4, 1.8, 0.4);
-    addWheel(1.4, 0.4, 1.8, 0.4);
-    addWheel(-1.0, 0.5, -1.6, 0.5);
-    addWheel(1.0, 0.5, -1.6, 0.5);
-    group.scale.setScalar(0.75);
-  } else if (type === "muscle") {
-    // Bulky muscle car with hood scoop
-    const body = new THREE.Mesh(new THREE.BoxGeometry(3.2, 1.0, 4.8), bodyMat);
-    body.position.y = 1.6;
-    group.add(body);
-    const cab = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.8, 2.0), bodyMat);
-    cab.position.set(0, 2.4, -0.5);
-    group.add(cab);
-    const glass = new THREE.Mesh(new THREE.BoxGeometry(2.3, 0.6, 1.8), glassMat);
-    glass.position.set(0, 2.45, -0.5);
-    group.add(glass);
-    const hoodScoop = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.4, 1.0), accentMat);
-    hoodScoop.position.set(0, 2.3, 1.2);
-    group.add(hoodScoop);
-    const bumperF = new THREE.Mesh(new THREE.BoxGeometry(3.0, 0.4, 0.4), trimMat);
-    bumperF.position.set(0, 1.1, 2.5);
-    group.add(bumperF);
-    const bumperR = new THREE.Mesh(new THREE.BoxGeometry(3.0, 0.4, 0.4), trimMat);
-    bumperR.position.set(0, 1.1, -2.5);
-    group.add(bumperR);
-    wheelRadius = 0.6;
-    addWheel(-1.5, 0.6, 1.5, 0.55);
-    addWheel(1.5, 0.6, 1.5, 0.55);
-    addWheel(-1.5, 0.6, -1.5, 0.65);
-    addWheel(1.5, 0.6, -1.5, 0.65);
-    group.scale.setScalar(0.7);
+  function mkBox(w, h, d, mat, px, py, pz, rx = 0, ry = 0, rz = 0) {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+    m.position.set(px, py, pz);
+    if (rx) m.rotation.x = rx;
+    if (ry) m.rotation.y = ry;
+    if (rz) m.rotation.z = rz;
+    group.add(m); return m;
+  }
+  function mkCyl(rt, rb, h, seg, mat, px, py, pz, rx = 0, ry = 0, rz = 0) {
+    const g = new THREE.CylinderGeometry(rt, rb, h, seg);
+    const m = new THREE.Mesh(g, mat);
+    m.position.set(px, py, pz);
+    if (rx) m.rotation.x = rx;
+    if (ry) m.rotation.y = ry;
+    if (rz) m.rotation.z = rz;
+    group.add(m); return m;
+  }
+  function mkSph(r, mat, px, py, pz, sx = 1, sy = 1, sz = 1) {
+    const m = new THREE.Mesh(new THREE.SphereGeometry(r, 10, 8), mat);
+    m.position.set(px, py, pz);
+    m.scale.set(sx, sy, sz);
+    group.add(m); return m;
+  }
+
+  if (type === "kart") {
+    // ── Standard Go-Kart (Mario / Luigi) ──
+    // Wide flat chassis platform
+    mkBox(2.5, 0.24, 4.2, bodyMat,  0, 0.56, 0);
+    // Side pods (aerodynamic)
+    mkBox(0.38, 0.34, 3.4, darkBody, -1.35, 0.62,  0.0);
+    mkBox(0.38, 0.34, 3.4, darkBody,  1.35, 0.62,  0.0);
+    // Front nose bumper
+    mkBox(2.3,  0.38, 0.7, bodyMat,   0, 0.62, 2.3);
+    mkBox(2.1,  0.26, 0.28,darkBody,  0, 0.50, 2.63);
+    // Front bumper chrome bar
+    mkCyl(0.10, 0.10, 2.5, 8, chromeMat, 0, 0.60, 2.80,  0, 0, Math.PI/2);
+    // Seat back + base
+    mkBox(1.1,  0.92, 0.22, darkBody, 0, 1.08, -1.0);
+    mkBox(1.1,  0.18, 0.88, darkBody, 0, 0.72, -0.6);
+    // Roll hoop U-shape
+    mkCyl(0.075, 0.075, 1.32, 7, chromeMat,  0,   1.68, -1.02, 0, 0, Math.PI/2);
+    mkCyl(0.075, 0.075, 0.76, 7, chromeMat, -0.6, 1.30, -1.02);
+    mkCyl(0.075, 0.075, 0.76, 7, chromeMat,  0.6, 1.30, -1.02);
+    // Steering wheel
+    const sw = new THREE.Mesh(new THREE.TorusGeometry(0.21, 0.035, 5, 12), chromeMat);
+    sw.rotation.x = -0.5; sw.position.set(0, 1.06, 0.76); group.add(sw);
+    mkCyl(0.03, 0.03, 0.30, 6, chromeMat, 0, 0.91, 0.60, 0.5);
+    // Exhaust pipes
+    mkCyl(0.07, 0.09, 1.2, 7, chromeMat, -1.18, 0.68, -0.65, 0, 0, Math.PI/2);
+    mkCyl(0.07, 0.09, 1.2, 7, chromeMat,  1.18, 0.68, -0.65, 0, 0, Math.PI/2);
+    // Headlights
+    mkSph(0.13, lightMat,   -0.68, 0.72, 2.72);
+    mkSph(0.13, lightMat,    0.68, 0.72, 2.72);
+    // Taillights
+    mkSph(0.11, redLightMat,-0.90, 0.68, -2.18);
+    mkSph(0.11, redLightMat, 0.90, 0.68, -2.18);
+    // Number plate
+    mkBox(0.9, 0.36, 0.06, whiteMat, 0, 0.72, 2.66);
+    wheelRadius = 0.48;
+    addWheel(-1.22, 0.48,  1.52, 0.48);
+    addWheel( 1.22, 0.48,  1.52, 0.48);
+    addWheel(-1.22, 0.48, -1.52, 0.48);
+    addWheel( 1.22, 0.48, -1.52, 0.48);
+    group.scale.setScalar(0.82);
+
   } else if (type === "mini") {
-    // Small rounded mini car
-    const body = new THREE.Mesh(new THREE.SphereGeometry(1.5, 12, 8), bodyMat);
-    body.scale.set(1.0, 0.55, 1.3);
-    body.position.y = 1.4;
-    group.add(body);
-    const roof = new THREE.Mesh(new THREE.SphereGeometry(0.9, 10, 6), glassMat);
-    roof.scale.set(1.0, 0.6, 0.8);
-    roof.position.set(0, 2.0, -0.2);
-    group.add(roof);
-    const bumperF = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.3, 0.3), trimMat);
-    bumperF.position.set(0, 0.9, 1.8);
-    group.add(bumperF);
-    const light1 = new THREE.Mesh(new THREE.SphereGeometry(0.15, 6, 4), new THREE.MeshStandardMaterial({ color: 0xffffaa, emissive: 0xffff44, emissiveIntensity: 0.5 }));
-    light1.position.set(-0.6, 1.2, 1.9);
-    const light2 = light1.clone();
-    light2.position.x = 0.6;
-    group.add(light1, light2);
-    wheelRadius = 0.4;
-    addWheel(-1.0, 0.4, 1.1, 0.4);
-    addWheel(1.0, 0.4, 1.1, 0.4);
-    addWheel(-1.0, 0.4, -1.1, 0.4);
-    addWheel(1.0, 0.4, -1.1, 0.4);
-    group.scale.setScalar(0.85);
+    // ── Biddybuggy — bubble kart (Peach / Toad / Daisy) ──
+    // Bubbly round body
+    mkSph(1.42, bodyMat, 0, 0.88, 0, 1.12, 0.68, 1.28);
+    // Glass dome cockpit
+    mkSph(0.78, glassMat, 0, 1.50, -0.16, 1.0, 0.62, 0.84);
+    // Front face "headlight eyes"
+    mkSph(0.24, whiteMat, -0.52, 0.90, 1.66);
+    mkSph(0.24, whiteMat,  0.52, 0.90, 1.66);
+    mkSph(0.15, lightMat, -0.52, 0.90, 1.78);
+    mkSph(0.15, lightMat,  0.52, 0.90, 1.78);
+    // Front lip bumper
+    mkBox(2.52, 0.18, 0.2, darkBody, 0, 0.48, 1.48, -0.18);
+    // Rear tail fin
+    mkBox(1.88, 0.46, 0.16, darkBody, 0, 1.26, -1.68, 0.26);
+    // Side stripe decals
+    mkBox(0.12, 0.52, 2.2, whiteMat, -1.44, 0.82, 0);
+    mkBox(0.12, 0.52, 2.2, whiteMat,  1.44, 0.82, 0);
+    // Exhausts
+    mkCyl(0.08, 0.10, 0.52, 7, chromeMat, -0.5, 0.62, -1.82, Math.PI/2);
+    mkCyl(0.08, 0.10, 0.52, 7, chromeMat,  0.5, 0.62, -1.82, Math.PI/2);
+    // Taillights
+    mkSph(0.12, redLightMat, -0.72, 0.72, -1.76);
+    mkSph(0.12, redLightMat,  0.72, 0.72, -1.76);
+    wheelRadius = 0.42;
+    addWheel(-1.16, 0.42,  1.08, 0.42, 0.46);
+    addWheel( 1.16, 0.42,  1.08, 0.42, 0.46);
+    addWheel(-1.16, 0.42, -1.08, 0.42, 0.46);
+    addWheel( 1.16, 0.42, -1.08, 0.42, 0.46);
+    group.scale.setScalar(0.88);
+
+  } else if (type === "buggy") {
+    // ── Wild Wiggler — caterpillar kart (Yoshi / Koopa) ──
+    // Head
+    mkSph(1.04, bodyMat,  0, 0.82, 2.56, 0.82, 0.72, 0.88);
+    // Caterpillar body segments (alternating)
+    const segZ = [1.28, 0.2, -0.88, -1.82];
+    const segY = [0.76, 0.80, 0.76, 0.70];
+    const segS = [0.92, 0.86, 0.78, 0.70];
+    segZ.forEach((z, i) => {
+      const m = i % 2 === 0 ? bodyMat : darkBody;
+      mkSph(0.96, m, 0, segY[i], z, 0.76, 0.62, segS[i]);
+    });
+    // Eyes on head
+    const eyeWM = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.4 });
+    const eyePM = new THREE.MeshStandardMaterial({ color: 0x111111 });
+    mkSph(0.22, eyeWM, -0.48, 1.20, 3.18);
+    mkSph(0.22, eyeWM,  0.48, 1.20, 3.18);
+    mkSph(0.12, eyePM, -0.48, 1.20, 3.32);
+    mkSph(0.12, eyePM,  0.48, 1.20, 3.32);
+    // Antennae
+    mkCyl(0.04, 0.04, 0.80, 5, darkBody, -0.44, 1.78, 2.80, 0, 0, -0.48);
+    mkCyl(0.04, 0.04, 0.80, 5, darkBody,  0.44, 1.78, 2.80, 0, 0,  0.48);
+    const ballM = new THREE.MeshStandardMaterial({ color: 0xffdd00, emissive: 0xffaa00, emissiveIntensity: 0.6 });
+    mkSph(0.13, ballM, -0.62, 2.16, 2.60);
+    mkSph(0.13, ballM,  0.62, 2.16, 2.60);
+    // Cockpit seat area
+    mkBox(0.88, 0.24, 0.72, new THREE.MeshStandardMaterial({ color: 0x222222 }), 0, 1.22, 1.1);
+    // Taillights / back face
+    mkSph(0.12, redLightMat, -0.46, 0.72, -2.40);
+    mkSph(0.12, redLightMat,  0.46, 0.72, -2.40);
+    wheelRadius = 0.55;
+    addWheel(-1.32, 0.55,  1.4, 0.55, 0.58);
+    addWheel( 1.32, 0.55,  1.4, 0.55, 0.58);
+    addWheel(-1.32, 0.55, -0.8, 0.55, 0.58);
+    addWheel( 1.32, 0.55, -0.8, 0.55, 0.58);
+    group.scale.setScalar(0.76);
+
+  } else if (type === "dragster") {
+    // ── Pipe Frame dragster (Wario) ──
+    const pipeM = new THREE.MeshStandardMaterial({ color: col, roughness: 0.2, metalness: 0.85 });
+    // Main spine tubes (forming an H-frame)
+    const spineGeo = new THREE.CylinderGeometry(0.10, 0.10, 5.8, 8);
+    spineGeo.rotateX(Math.PI / 2);
+    const spineL = new THREE.Mesh(spineGeo, pipeM); spineL.position.set(-0.72, 0.72, 0); group.add(spineL);
+    const spineR = new THREE.Mesh(spineGeo, pipeM); spineR.position.set( 0.72, 0.72, 0); group.add(spineR);
+    // Cross bars
+    mkCyl(0.09, 0.09, 1.46, 8, pipeM,  0, 0.72,  1.80, 0, 0, Math.PI/2);
+    mkCyl(0.09, 0.09, 1.46, 8, pipeM,  0, 0.72,  0.20, 0, 0, Math.PI/2);
+    mkCyl(0.09, 0.09, 1.46, 8, pipeM,  0, 0.72, -1.60, 0, 0, Math.PI/2);
+    // Seat + cockpit area
+    mkBox(0.96, 0.20, 0.96, new THREE.MeshStandardMaterial({ color: 0x1a1a1a }), 0, 0.92, 0.1);
+    mkBox(0.88, 0.84, 0.20, darkBody, 0, 1.28, -0.42);
+    // Steering wheel
+    const sw2 = new THREE.Mesh(new THREE.TorusGeometry(0.20, 0.034, 5, 10), chromeMat);
+    sw2.rotation.x = -0.5; sw2.position.set(0, 1.10, 0.66); group.add(sw2);
+    // Engine block (rear)
+    mkBox(1.44, 0.80, 1.20, darkBody, 0, 1.12, -2.0);
+    // Engine exhausts (upright pipes)
+    mkCyl(0.08, 0.10, 1.40, 7, chromeMat, -0.52, 1.82, -1.92);
+    mkCyl(0.08, 0.10, 1.40, 7, chromeMat,  0.52, 1.82, -1.92);
+    // Nose cone (front)
+    const noseG = new THREE.CylinderGeometry(0.06, 0.52, 1.6, 8); noseG.rotateX(Math.PI / 2);
+    const nose = new THREE.Mesh(noseG, pipeM); nose.position.set(0, 0.68, 3.5); group.add(nose);
+    // Headlights
+    mkSph(0.13, lightMat, -0.36, 0.72, 3.18);
+    mkSph(0.13, lightMat,  0.36, 0.72, 3.18);
+    wheelRadius = 0.42;
+    addWheel(-0.96, 0.42,  2.0, 0.38, 0.42);  // small front
+    addWheel( 0.96, 0.42,  2.0, 0.38, 0.42);
+    addWheel(-1.18, 0.72, -1.9, 0.72, 0.68);  // big rear
+    addWheel( 1.18, 0.72, -1.9, 0.72, 0.68);
+    group.scale.setScalar(0.76);
+
+  } else if (type === "monster") {
+    // ── Standard ATV / Heavy 4x4 (Bowser) ──
+    // Chassis platform
+    mkBox(3.0, 0.32, 4.4, bodyMat, 0, 1.62, 0);
+    // Main cab body
+    mkBox(2.8, 1.10, 3.2, bodyMat, 0, 2.18, -0.2);
+    // Glass windshield
+    mkBox(2.5, 0.72, 0.12, glassMat, 0, 2.72, 1.46, -0.36);
+    // Rear glass
+    mkBox(2.5, 0.60, 0.12, glassMat, 0, 2.62, -1.72, 0.28);
+    // Hood (sloped)
+    mkBox(2.6, 0.30, 1.48, bodyMat, 0, 2.72, 1.24, 0.18);
+    // Front crash bar / bull bar
+    mkCyl(0.12, 0.12, 3.2, 8, chromeMat, 0, 1.72, 2.38, 0, 0, Math.PI/2);
+    mkCyl(0.12, 0.12, 1.38, 8, chromeMat, -1.22, 2.08, 2.24, 0.48);
+    mkCyl(0.12, 0.12, 1.38, 8, chromeMat,  1.22, 2.08, 2.24, 0.48);
+    // Roll cage
+    mkCyl(0.10, 0.10, 2.8, 8, chromeMat, -1.22, 3.2, 0, 0, 0, Math.PI/2);
+    mkCyl(0.10, 0.10, 1.6, 8, chromeMat, -1.22, 2.58, -1.72);
+    mkCyl(0.10, 0.10, 1.6, 8, chromeMat,  1.22, 2.58, -1.72);
+    // Exhausts (dual side)
+    mkCyl(0.12, 0.14, 1.6, 7, chromeMat, -1.42, 2.2, -0.8, 0, 0, Math.PI/2);
+    mkCyl(0.12, 0.14, 1.6, 7, chromeMat,  1.42, 2.2, -0.8, 0, 0, Math.PI/2);
+    // Headlights
+    mkSph(0.18, lightMat, -0.88, 2.08, 2.52);
+    mkSph(0.18, lightMat,  0.88, 2.08, 2.52);
+    // Taillights
+    mkSph(0.15, redLightMat, -0.88, 2.0, -2.48);
+    mkSph(0.15, redLightMat,  0.88, 2.0, -2.48);
+    wheelRadius = 1.08;
+    addWheel(-1.74, 1.08, 1.6, 1.08, 0.82);
+    addWheel( 1.74, 1.08, 1.6, 1.08, 0.82);
+    addWheel(-1.74, 1.08, -1.6, 1.08, 0.82);
+    addWheel( 1.74, 1.08, -1.6, 1.08, 0.82);
+    group.scale.setScalar(0.60);
+
+  } else if (type === "sports") {
+    // ── Blue Falcon / Pipe Frame sports (Rosalina) ──
+    // Low swept body shell
+    mkSph(1.6, bodyMat, 0, 0.96, 0, 1.74, 0.56, 1.94);
+    // Cabin glass
+    mkSph(0.88, glassMat, 0, 1.44, -0.5, 1.02, 0.62, 0.90);
+    // Front splitter nose
+    mkBox(2.4, 0.14, 1.0, darkBody, 0, 0.60, 2.56);
+    mkBox(2.2, 0.10, 0.44, darkBody, 0, 0.46, 3.1);
+    // Rear diffuser
+    mkBox(2.4, 0.14, 0.88, darkBody, 0, 0.56, -2.4, 0.18);
+    // Rear spoiler blade
+    mkBox(2.6, 0.08, 0.58, bodyMat, 0, 1.68, -2.28);
+    mkCyl(0.06, 0.06, 0.96, 6, chromeMat, -0.96, 1.28, -2.28);
+    mkCyl(0.06, 0.06, 0.96, 6, chromeMat,  0.96, 1.28, -2.28);
+    // Side skirts
+    mkBox(0.14, 0.36, 4.0, darkBody, -1.62, 0.64, 0);
+    mkBox(0.14, 0.36, 4.0, darkBody,  1.62, 0.64, 0);
+    // Dual exhaust
+    mkCyl(0.09, 0.11, 0.56, 7, chromeMat, -0.56, 0.66, -2.78, Math.PI/2);
+    mkCyl(0.09, 0.11, 0.56, 7, chromeMat,  0.56, 0.66, -2.78, Math.PI/2);
+    // Headlights
+    mkSph(0.14, lightMat, -0.82, 0.86, 2.88);
+    mkSph(0.14, lightMat,  0.82, 0.86, 2.88);
+    // Taillights (horizontal bar style)
+    mkBox(2.2, 0.12, 0.08, redLightMat, 0, 1.06, -2.76);
+    wheelRadius = 0.46;
+    addWheel(-1.42, 0.46,  1.68, 0.46);
+    addWheel( 1.42, 0.46,  1.68, 0.46);
+    addWheel(-1.42, 0.46, -1.76, 0.46);
+    addWheel( 1.42, 0.46, -1.76, 0.46);
+    group.scale.setScalar(0.74);
+
+  } else if (type === "f1") {
+    // ── Circuit Special — F1 kart (DK / Waluigi) ──
+    // Central monocoque
+    mkBox(1.52, 0.48, 4.6, bodyMat, 0, 0.68, 0);
+    // Nose cone (tapered)
+    const noseGeo = new THREE.CylinderGeometry(0.24, 0.62, 1.8, 8); noseGeo.rotateX(Math.PI / 2);
+    const noseM = new THREE.Mesh(noseGeo, bodyMat); noseM.position.set(0, 0.58, 3.1); group.add(noseM);
+    // Front wing
+    mkBox(3.4, 0.07, 0.64, bodyMat, 0, 0.32, 3.6);
+    mkBox(3.2, 0.07, 0.42, darkBody, 0, 0.24, 3.84);
+    // Wing end plates
+    mkBox(0.08, 0.38, 0.66, darkBody, -1.68, 0.40, 3.62);
+    mkBox(0.08, 0.38, 0.66, darkBody,  1.68, 0.40, 3.62);
+    // Cockpit surround + halo
+    mkBox(1.48, 0.56, 1.12, darkBody, 0, 1.10,  0.12);
+    mkBox(1.22, 0.12, 1.12, glassMat, 0, 1.28,  0.12);
+    const haloGeo = new THREE.TorusGeometry(0.54, 0.055, 5, 18, Math.PI);
+    const halo = new THREE.Mesh(haloGeo, chromeMat);
+    halo.rotation.z = Math.PI; halo.position.set(0, 1.54, 0.12); group.add(halo);
+    // Sidepods
+    mkBox(0.52, 0.84, 2.4, bodyMat, -1.04, 0.84, -0.2);
+    mkBox(0.52, 0.84, 2.4, bodyMat,  1.04, 0.84, -0.2);
+    // Rear wing + stands
+    mkBox(2.8, 0.07, 0.58, bodyMat, 0, 1.72, -2.18);
+    mkBox(2.4, 0.07, 0.48, bodyMat, 0, 1.38, -2.18);
+    mkCyl(0.06, 0.06, 1.0, 6, chromeMat, -0.8, 1.22, -2.18);
+    mkCyl(0.06, 0.06, 1.0, 6, chromeMat,  0.8, 1.22, -2.18);
+    // Exhausts
+    mkCyl(0.09, 0.12, 0.7, 7, chromeMat, -0.44, 1.12, -2.6, Math.PI/2);
+    mkCyl(0.09, 0.12, 0.7, 7, chromeMat,  0.44, 1.12, -2.6, Math.PI/2);
+    // Headlights
+    mkSph(0.12, lightMat, -0.52, 0.62, 3.78);
+    mkSph(0.12, lightMat,  0.52, 0.62, 3.78);
+    wheelRadius = 0.42;
+    addWheel(-1.44, 0.42,  2.0, 0.42, 0.62);  // big front
+    addWheel( 1.44, 0.42,  2.0, 0.42, 0.62);
+    addWheel(-1.18, 0.50, -1.7, 0.50, 0.72);  // bigger rear
+    addWheel( 1.18, 0.50, -1.7, 0.50, 0.72);
+    group.scale.setScalar(0.72);
+
   } else {
-    // Default kart — open go-kart
-    const chassis = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.35, 3.4), bodyMat);
-    chassis.position.y = 0.9;
-    group.add(chassis);
-    const seatBack = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.8, 0.3), trimMat);
-    seatBack.position.set(0, 1.5, -0.8);
-    group.add(seatBack);
-    const seatBase = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.2, 0.8), trimMat);
-    seatBase.position.set(0, 1.1, -0.5);
-    group.add(seatBase);
-    const steering = new THREE.Mesh(new THREE.TorusGeometry(0.25, 0.04, 6, 12), trimMat);
-    steering.rotation.x = -0.4;
-    steering.position.set(0, 1.3, 0.5);
-    group.add(steering);
-    const noseplate = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.5, 0.8), accentMat);
-    noseplate.position.set(0, 0.8, 1.6);
-    group.add(noseplate);
-    const number = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.1), new THREE.MeshStandardMaterial({ color: 0xffffff }));
-    number.position.set(0, 0.8, 2.0);
-    group.add(number);
-    wheelRadius = 0.45;
-    addWheel(-1.1, 0.45, 1.2, 0.45);
-    addWheel(1.1, 0.45, 1.2, 0.45);
-    addWheel(-1.1, 0.45, -1.2, 0.45);
-    addWheel(1.1, 0.45, -1.2, 0.45);
-    group.scale.setScalar(0.85);
+    // ── Default fallback go-kart ──
+    mkBox(2.4, 0.22, 4.0, bodyMat, 0, 0.58, 0);
+    mkBox(2.2, 0.36, 0.64, bodyMat, 0, 0.64, 2.2);
+    mkBox(1.0, 0.88, 0.20, darkBody, 0, 1.08, -0.9);
+    mkBox(1.0, 0.18, 0.86, darkBody, 0, 0.74, -0.52);
+    const sw3 = new THREE.Mesh(new THREE.TorusGeometry(0.20, 0.04, 5, 12), chromeMat);
+    sw3.rotation.x = -0.5; sw3.position.set(0, 1.06, 0.70); group.add(sw3);
+    wheelRadius = 0.46;
+    addWheel(-1.18, 0.46,  1.5, 0.46);
+    addWheel( 1.18, 0.46,  1.5, 0.46);
+    addWheel(-1.18, 0.46, -1.5, 0.46);
+    addWheel( 1.18, 0.46, -1.5, 0.46);
+    group.scale.setScalar(0.84);
   }
 
-  // Shadow casting for all children
   group.traverse((c) => { if (c.isMesh) { c.castShadow = true; c.receiveShadow = false; } });
-
-  return { root: group, wheels, wheelRadius, bodyMaterials: [bodyMat] };
+  // Return EMPTY bodyMaterials — character kart colors are baked in and must not be overridden
+  return { root: group, wheels, wheelRadius, bodyMaterials: [] };
 }
 
 function loadCarModel(parent, fallbackRoot, characterId) {
@@ -885,7 +975,7 @@ function loadCarModel(parent, fallbackRoot, characterId) {
   parent.userData.model = result.root;
   parent.userData.bodyMaterials = result.bodyMaterials;
   parent.userData.procedural = true;
-  applyCarColor(state.carColor);
+  // Character kart colors are baked in — no applyCarColor needed
 }
 
 /* Rock/tree models are now preloaded and cached — see preloadModels() above */
@@ -1973,17 +2063,26 @@ function updatePreviewKart(characterId) {
   prevKartGroup.position.y = 0;
   prevScene.add(prevKartGroup);
 
+  // Draw character portrait on the dedicated portrait canvas
+  const portraitCanvas = document.getElementById("preview-portrait-canvas");
+  if (portraitCanvas) {
+    const pctx = portraitCanvas.getContext("2d");
+    pctx.clearRect(0, 0, portraitCanvas.width, portraitCanvas.height);
+    pctx.save();
+    pctx.scale(portraitCanvas.width / 64, portraitCanvas.height / 80);
+    drawCharacterPortrait(pctx, ch.id);
+    pctx.restore();
+  }
+
   // Update info panel
-  const elEmoji = document.getElementById("preview-char-emoji");
   const elName  = document.getElementById("preview-char-name");
   const elKart  = document.getElementById("preview-char-kart");
   const elDesc  = document.getElementById("preview-char-desc");
-  if (elEmoji) elEmoji.textContent = ch.emoji;
   if (elName)  elName.textContent  = ch.name;
   if (elKart)  elKart.textContent  = ch.kart || ch.vehicle;
   if (elDesc)  elDesc.textContent  = ch.desc;
 
-  // Update stats bars (each stat is 1-5, mapped to 20-100%)
+  // Update stats bars (1-5 mapped to 20%-100%)
   if (ch.stats) {
     ["velocidad", "aceleracion", "manejo", "peso"].forEach((stat) => {
       const bar = document.getElementById("stat-" + stat);
@@ -2009,7 +2108,7 @@ function applySelectedKartToCar(characterId) {
   car.userData.bodyMaterials = fb.bodyMaterials;
   car.userData.model = fb.root;
   car.userData.procedural = true;
-  applyCarColor(state.carColor);
+  // Do NOT call applyCarColor — character colors are baked into the kart
 }
 
 function openVehicleMenu() {
@@ -2024,12 +2123,14 @@ function openVehicleMenu() {
 
 function buildVehicleMenu() {
   if (!vehicleGrid) return;
-  vehicleGrid.innerHTML = CONFIG.characters.map((ch) => `
+  vehicleGrid.innerHTML = CONFIG.characters.map((ch) => {
+    const src = getPortraitDataURL(ch.id, 96, 120);
+    return `
     <button class="vehicle-card ${ch.id === state.selectedKart ? "active" : ""}" data-character="${ch.id}">
-      <span class="char-emoji">${ch.emoji}</span>
+      <img class="char-portrait" src="${src}" alt="${ch.name}" width="48" height="60" />
       <span class="vehicle-name">${ch.name}</span>
-    </button>
-  `).join("");
+    </button>`;
+  }).join("");
 }
 
 function bindVehicleMenu() {
@@ -2338,6 +2439,11 @@ bindVehicleMenu();
 applyLevel(state.levelKey);
 resetRun();
 window.addEventListener("resize", onResize);
+// Prevent context menu on long-press (mobile)
+document.addEventListener("contextmenu", (e) => e.preventDefault());
+// Prevent pinch-to-zoom via touch events
+document.addEventListener("touchmove", (e) => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
+document.addEventListener("gesturestart", (e) => e.preventDefault(), { passive: false });
 finishRestart.addEventListener("click", () => {
   resetRun();
   startCountdown();

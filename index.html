@@ -2,7 +2,7 @@
 <html lang="es">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
     <title>Super Kart Racing - Carreras 3D</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏎️</text></svg>" />
     <link rel="stylesheet" href="styles.css" />
@@ -23,16 +23,17 @@
       <div class="vehicle-selector-layout">
         <!-- Left: character grid -->
         <div id="vehicle-grid" class="vehicle-grid"></div>
-        <!-- Right: 3D live preview -->
+        <!-- Right: preview panel -->
         <div class="vehicle-preview-panel">
-          <div class="preview-header">
-            <span id="preview-char-emoji" class="preview-emoji">🔴</span>
-            <div class="preview-char-info">
+          <!-- Top: portrait + name/kart info + 3D kart side by side -->
+          <div class="preview-top-row">
+            <canvas id="preview-portrait-canvas" width="128" height="160"></canvas>
+            <div class="preview-info-col">
               <div id="preview-char-name" class="preview-name">Mario</div>
               <div id="preview-char-kart" class="preview-kart">Standard Kart</div>
+              <canvas id="vehicle-preview-canvas"></canvas>
             </div>
           </div>
-          <canvas id="vehicle-preview-canvas"></canvas>
           <div id="preview-char-desc" class="preview-desc">Selecciona un personaje para ver sus stats.</div>
           <div id="preview-stats" class="preview-stats">
             <div class="stat-row"><span>Velocidad</span><div class="stat-bar"><div id="stat-velocidad" class="stat-fill"></div></div></div>
@@ -110,6 +111,6 @@
         }
       }
     </script>
-    <script type="module" src="src/main.js?v=7"></script>
+    <script type="module" src="src/main.js?v=10"></script>
   </body>
 </html>

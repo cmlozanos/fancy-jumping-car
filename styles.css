@@ -19,6 +19,11 @@
 * {
   box-sizing: border-box;
   font-family: "Press Start 2P", monospace;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 body {
@@ -477,165 +482,224 @@ button.primary {
   z-index: 110;
   background: var(--panel);
   border-color: var(--panel-border);
-  width: min(820px, 96vw);
-  max-width: min(820px, 96vw);
-  padding: 16px 20px 18px;
+  width: min(860px, 96vw);
+  max-width: min(860px, 96vw);
+  max-height: 92vh;
+  padding: 14px 18px 16px;
+  overflow: hidden;           /* let children scroll individually */
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
-#vehicle-menu h1 { margin-bottom: 10px; font-size: clamp(16px, 3vw, 22px); }
+/* Specificity fix: ID + class beats ID alone, so .hidden actually hides this panel */
+#vehicle-menu.hidden { display: none; }
+#vehicle-menu h1 { margin: 0; font-size: clamp(13px, 2.6vw, 20px); flex-shrink: 0; }
+#vehicle-menu > .primary { flex-shrink: 0; }
 
-/* ── Two-column split layout ── */
+/* ── Two-column split ── */
 .vehicle-selector-layout {
   display: flex;
-  gap: 16px;
-  align-items: flex-start;
+  gap: 14px;
+  align-items: stretch;
+  min-height: 0;          /* allow flex children to shrink below content size */
+  flex: 1;
+  overflow: hidden;
 }
 
-/* LEFT: scrollable character list */
+/* LEFT — scrollable character grid */
 .vehicle-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
   overflow-y: auto;
-  max-height: 380px;
-  flex: 0 0 auto;
-  width: 220px;
+  flex: 0 0 200px;
+  align-content: start;
   scrollbar-width: thin;
   scrollbar-color: var(--accent-2) transparent;
 }
-
 .vehicle-card {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: center;
-  gap: 6px;
-  padding: 7px 8px;
+  gap: 4px;
+  padding: 6px 3px 5px;
   border: 2px solid var(--panel-border);
   border-radius: 10px;
-  background: linear-gradient(135deg, #1a1040 0%, #0d0820 100%);
+  background: linear-gradient(150deg, #1a1040 0%, #0d0820 100%);
   color: var(--text);
   cursor: pointer;
-  transition: border-color 0.15s, transform 0.12s, box-shadow 0.15s;
-  text-align: left;
+  transition: border-color 0.13s, transform 0.11s, box-shadow 0.13s;
+  text-align: center;
+  overflow: hidden;
+  min-width: 0;
 }
 .vehicle-card:hover {
   border-color: var(--accent-2);
-  transform: scale(1.04);
-  box-shadow: 0 0 14px rgba(255, 68, 136, 0.35);
+  transform: scale(1.05);
+  box-shadow: 0 0 12px rgba(255, 68, 136, 0.35);
 }
 .vehicle-card.active {
   border-color: var(--accent);
-  box-shadow: 0 0 0 2px rgba(255, 221, 0, 0.5), 0 0 16px rgba(255, 221, 0, 0.25);
-  background: linear-gradient(135deg, #221848 0%, #110e30 100%);
+  box-shadow: 0 0 0 2px rgba(255, 221, 0, 0.5), 0 0 14px rgba(255, 221, 0, 0.22);
+  background: linear-gradient(150deg, #221848 0%, #110e30 100%);
 }
-
-.char-emoji {
-  font-size: 22px;
-  flex-shrink: 0;
-  filter: drop-shadow(0 1px 4px rgba(0,0,0,0.6));
+.char-portrait {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 5;
+  display: block;
+  border-radius: 5px;
+  image-rendering: pixelated;
+  border: 1px solid rgba(255,255,255,0.08);
 }
+.char-emoji { display: none; }
 .vehicle-name {
-  font-size: 10px;
+  font-size: 8px;
   text-transform: uppercase;
   color: var(--accent);
   font-weight: bold;
-  line-height: 1.2;
+  line-height: 1;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  max-width: 100%;
+  padding: 0 2px;
 }
 .vehicle-desc { display: none; }
 
-/* RIGHT: 3D preview panel */
+/* RIGHT — preview panel */
 .vehicle-preview-panel {
   flex: 1;
   display: flex;
   flex-direction: column;
   gap: 8px;
   min-width: 0;
+  overflow: visible;
 }
 
-.preview-header {
+/* Portrait (big) + 3-D kart side by side */
+.preview-top-row {
   display: flex;
-  align-items: center;
   gap: 10px;
+  flex: 0 0 auto;
+  align-items: stretch;
+  height: 170px;   /* fixed slot — portrait fills it, kart fills its half */
 }
-.preview-emoji {
-  font-size: 40px;
-  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.6));
+
+#preview-portrait-canvas {
+  flex: 0 0 136px;
+  width: 136px;
+  height: 170px;
+  border-radius: 10px;
+  border: 2px solid var(--panel-border);
+  background: #0d0820;
+  display: block;
+  image-rendering: pixelated;
 }
-.preview-char-info { display: flex; flex-direction: column; }
+
+.preview-info-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+  overflow: hidden;
+}
+
 .preview-name {
-  font-size: 20px;
+  font-size: clamp(14px, 2vw, 20px);
   font-weight: bold;
   color: var(--accent);
-  text-shadow: 0 0 10px rgba(255,221,0,0.5);
+  text-shadow: 0 0 10px rgba(255,221,0,0.45);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .preview-kart {
-  font-size: 11px;
-  color: rgba(255,255,255,0.55);
+  font-size: 10px;
+  color: rgba(255,255,255,0.50);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
 }
 
 #vehicle-preview-canvas {
+  flex: 1;
   width: 100%;
-  aspect-ratio: 16 / 9;
-  border-radius: 12px;
+  min-height: 0;
+  border-radius: 8px;
   border: 2px solid var(--panel-border);
   background: #0d0820;
   display: block;
 }
 
 .preview-desc {
-  font-size: 11px;
-  color: rgba(255,255,255,0.7);
+  font-size: 10px;
+  color: rgba(255,255,255,0.65);
   line-height: 1.5;
-  min-height: 2.5em;
+  flex: 0 0 auto;
 }
 
 /* Stats bars */
 .preview-stats {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 4px;
+  flex: 0 0 auto;
 }
 .stat-row {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 10px;
+  font-size: 9px;
   text-transform: uppercase;
-  color: rgba(255,255,255,0.6);
+  color: rgba(255,255,255,0.55);
 }
-.stat-row > span { width: 76px; flex-shrink: 0; }
+.stat-row > span {
+  width: 76px;
+  flex-shrink: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .stat-bar {
   flex: 1;
-  height: 7px;
-  background: rgba(255,255,255,0.1);
-  border-radius: 4px;
+  height: 6px;
+  background: rgba(255,255,255,0.10);
+  border-radius: 3px;
   overflow: hidden;
 }
 .stat-fill {
   height: 100%;
-  border-radius: 4px;
+  border-radius: 3px;
   background: linear-gradient(90deg, var(--rainbow-1), var(--rainbow-3));
   transition: width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
   width: 0%;
 }
 
-/* ─── Character selector responsive ─── */
-@media (max-width: 540px) {
+/* ── Responsive ── */
+@media (max-width: 580px) {
+  #vehicle-menu {
+    padding: 10px 12px 12px;
+    max-height: 95vh;
+  }
   .vehicle-selector-layout {
     flex-direction: column;
+    overflow-y: auto;
   }
   .vehicle-grid {
-    width: 100%;
-    max-height: 160px;
-    grid-template-columns: repeat(3, 1fr);
+    flex: 0 0 auto;
+    max-height: 140px;
+    grid-template-columns: repeat(4, 1fr);
   }
-  #vehicle-preview-canvas {
-    aspect-ratio: 4 / 3;
+  .preview-top-row {
+    height: 130px;
   }
+  #preview-portrait-canvas {
+    flex: 0 0 104px;
+    width: 104px;
+    height: 130px;
+  }
+  .preview-name { font-size: 13px; }
 }
 
 /* ─── COUNTDOWN OVERLAY ─── */
@@ -693,7 +757,8 @@ button.primary {
   filter: drop-shadow(0 1px 3px #000a);
 }
 
-/* ─── HUD LAYOUT TWEAKS ─── */
+/* Hide color picker — character kart colors are fixed */
+.color-picker { display: none !important; }
 .hud-row {
   display: flex;
   flex-wrap: wrap;
