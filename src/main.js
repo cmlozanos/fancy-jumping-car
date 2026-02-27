@@ -362,12 +362,18 @@ const trackOps = {
 const clock = new THREE.Clock();
 
 const WORLD_ICONS = {
-  "Pradera": "�",
+  "Pradera": "🌿",
   "Desierto": "🏜️",
-  "Montaña": "⭐",
+  "Montaña": "⛰️",
   "Volcán": "🌋",
   "Ártico": "❄️",
-  "Espacio": "🌈",
+  "Espacio": "🚀",
+  "Selva": "🌴",
+  "Océano": "🌊",
+  "Ciudad": "🏙️",
+  "Dulce": "🍬",
+  "Nubes": "☁️",
+  "Subterráneo": "⛏️",
 };
 
 function buildLevelMenu() {
@@ -2597,6 +2603,7 @@ function resetRun() {
   state.lavaHit = false;
   state.starActive = 0;
   state.starOriginalColor = null;
+  applySelectedKartToCar(state.selectedKart);
   prevCollected = false;
   finishPanel.classList.add("hidden");
   if (finishNext) {
