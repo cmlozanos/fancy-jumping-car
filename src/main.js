@@ -64,6 +64,8 @@ const state = {
   lavaHit: false,
   countdownActive: false,
   selectedKart: savedKart,
+  starActive: 0,
+  starOriginalColor: null,
 };
 
 const input = {
@@ -127,6 +129,8 @@ let trampolines;
 let lavaZones;
 let mudZones;
 let collectible;
+let starItems;
+let grayRamps;
 
 const car = new THREE.Group();
 const selectedChar = CONFIG.characters.find((c) => c.id === state.selectedKart) || CONFIG.characters[0];
@@ -427,6 +431,8 @@ function clearLevelScene() {
   if (lavaZones) lavaZones.forEach((zone) => { scene.remove(zone.mesh); disposeObject3D(zone.mesh); });
   if (mudZones) mudZones.forEach((zone) => { scene.remove(zone.mesh); disposeObject3D(zone.mesh); });
   if (collectible) { scene.remove(collectible.mesh); disposeObject3D(collectible.mesh); }
+  if (starItems) starItems.forEach((s) => { scene.remove(s.mesh); disposeObject3D(s.mesh); });
+  if (grayRamps) grayRamps.forEach((r) => { scene.remove(r.mesh); disposeObject3D(r.mesh); });
 }
 
 function initLevel(levelKey) {
@@ -473,7 +479,13 @@ function initLevel(levelKey) {
   collectible = buildCollectible(track, level);
   if (collectible) scene.add(collectible.mesh);
 
-  world = { car, ground, obstacles, ramps, trees, turboPads, trampolines, lavaZones, mudZones, collectible };
+  starItems = buildStarItems(track, level);
+  starItems.forEach((s) => scene.add(s.mesh));
+
+  grayRamps = buildGrayRamps(track, level);
+  grayRamps.forEach((r) => scene.add(r.mesh));
+
+  world = { car, ground, obstacles, ramps: [...ramps, ...grayRamps], trees, turboPads, trampolines, lavaZones, mudZones, collectible, starItems };
 }
 
 function updateLevelMenuState() {
@@ -1854,6 +1866,166 @@ function animateCollectible(delta) {
     (collectible.mesh.userData.baseY ?? CONFIG.collectible.height) + Math.sin(elapsed * 2.8) * 0.5;
 }
 
+function buildStarItems(trackData, level) {
+  const zones = level?.starZones ?? [];
+  return zones.map((item) => {
+    const center = getTrackPoint(trackData, item.t);
+    const tangent = getTrackTangent(trackData, item.t);
+    const left = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
+
+    const group = new THREE.Group();
+
+    // Star shape using custom geometry (5-pointed star)
+    const starShape = new THREE.Shape();
+    const outerR = 1.2;
+    const innerR = 0.5;
+    for (let i = 0; i < 10; i++) {
+      const r = i % 2 === 0 ? outerR : innerR;
+      const angle = (i / 10) * Math.PI * 2 - Math.PI / 2;
+      const x = Math.cos(angle) * r;
+      const y = Math.sin(angle) * r;
+      if (i === 0) starShape.moveTo(x, y);
+      else starShape.lineTo(x, y);
+    }
+    starShape.closePath();
+    const starGeo = new THREE.ExtrudeGeometry(starShape, { depth: 0.4, bevelEnabled: true, bevelThickness: 0.08, bevelSize: 0.08, bevelSegments: 2 });
+    const starMat = new THREE.MeshStandardMaterial({
+      color: 0xffee00,
+      emissive: 0xffaa00,
+      emissiveIntensity: 1.2,
+      roughness: 0.2,
+      metalness: 0.6,
+    });
+    const starMesh = new THREE.Mesh(starGeo, starMat);
+    starMesh.rotation.x = Math.PI / 2;
+    group.add(starMesh);
+
+    // Glow ring around the star
+    const glowRing = new THREE.Mesh(
+      new THREE.TorusGeometry(1.6, 0.12, 8, 24),
+      new THREE.MeshStandardMaterial({
+        color: 0xffdd00,
+        emissive: 0xff8800,
+        emissiveIntensity: 0.9,
+        transparent: true,
+        opacity: 0.7,
+      })
+    );
+    group.add(glowRing);
+
+    // Small sparkle spheres
+    const sparkleMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffffaa, emissiveIntensity: 1.5 });
+    [[1.4, 0.3, 0], [-1.4, -0.3, 0], [0, 1.4, 0.2], [0, -1.4, -0.2]].forEach(([sx, sy, sz]) => {
+      const sparkle = new THREE.Mesh(new THREE.SphereGeometry(0.15, 6, 4), sparkleMat);
+      sparkle.position.set(sx, sy, sz);
+      group.add(sparkle);
+    });
+
+    group.position.copy(center).addScaledVector(left, item.lateral ?? 0);
+    group.position.y = CONFIG.star.height;
+    group.userData.baseY = CONFIG.star.height;
+
+    const lateralHalf = CONFIG.star.width * 0.5;
+    const progressHalf = CONFIG.star.width / trackData.total;
+    return { mesh: group, t: item.t, lateral: item.lateral ?? 0, lateralHalf, progressHalf, collected: false };
+  });
+}
+
+function animateStarItems(delta) {
+  if (!starItems) return;
+  const elapsed = clock.elapsedTime;
+  starItems.forEach((star) => {
+    if (star.collected) {
+      star.mesh.visible = false;
+      return;
+    }
+    star.mesh.rotation.y += CONFIG.star.rotateSpeed * delta;
+    star.mesh.position.y = (star.mesh.userData.baseY ?? CONFIG.star.height) + Math.sin(elapsed * 3.0) * 0.6;
+  });
+}
+
+function buildGrayRamps(trackData, level) {
+  const count = level?.grayRamps ?? 0;
+  if (count <= 0) return [];
+
+  const cfg = CONFIG.grayRamps;
+  const material = new THREE.MeshStandardMaterial({
+    color: cfg.color,
+    roughness: 0.6,
+    metalness: 0.4,
+  });
+
+  const results = [];
+  for (let i = 0; i < count; i++) {
+    // Place gray ramps at positions spread across the track, offset from existing ramps
+    const t = Math.max(0.08, Math.min(0.92, 0.2 + (i / Math.max(1, count)) * 0.6));
+    const lateral = i % 2 === 0 ? 3.0 : -3.0;
+
+    const center = getTrackPoint(trackData, t);
+    const tangent = getTrackTangent(trackData, t);
+    const left = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
+    const yaw = Math.atan2(tangent.x, tangent.z);
+
+    const group = new THREE.Group();
+    group.rotation.y = yaw;
+
+    // Ramp body
+    const rampMesh = new THREE.Mesh(
+      buildRampGeometry(cfg.frontWidth, cfg.backWidth, cfg.length, cfg.height),
+      material
+    );
+    group.add(rampMesh);
+
+    // Metallic stripes on the ramp surface for visual distinction
+    const stripeMat = new THREE.MeshStandardMaterial({
+      color: 0xb0b0b0,
+      emissive: 0x444444,
+      emissiveIntensity: 0.3,
+      metalness: 0.7,
+      roughness: 0.3,
+    });
+    for (let s = 0; s < 3; s++) {
+      const stripeZ = -cfg.length * 0.3 + s * cfg.length * 0.3;
+      const stripe = new THREE.Mesh(
+        new THREE.BoxGeometry(cfg.backWidth * 0.8, 0.06, 0.2),
+        stripeMat
+      );
+      const frac = (stripeZ + cfg.length * 0.5) / cfg.length;
+      stripe.position.set(0, cfg.height * frac + 0.05, stripeZ);
+      stripe.rotation.x = Math.atan2(cfg.height, cfg.length);
+      group.add(stripe);
+    }
+
+    // Side rails for visual effect
+    const railMat = new THREE.MeshStandardMaterial({ color: 0x666666, metalness: 0.8, roughness: 0.3 });
+    [-cfg.backWidth * 0.5, cfg.backWidth * 0.5].forEach((rx) => {
+      const rail = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, cfg.length, 6), railMat);
+      rail.rotation.x = Math.PI / 2;
+      rail.position.set(rx, cfg.height * 0.4, 0);
+      group.add(rail);
+    });
+
+    group.position.copy(center).addScaledVector(left, lateral);
+    group.position.y = 0;
+
+    const lateralHalf = cfg.backWidth * 0.5;
+    const progressHalf = (cfg.length * 0.5) / trackData.total;
+
+    results.push({
+      mesh: group,
+      t,
+      lateral,
+      lateralHalf,
+      progressHalf,
+      height: cfg.height,
+      frontWidth: cfg.frontWidth,
+      backWidth: cfg.backWidth,
+      length: cfg.length,
+    });
+  }
+  return results;
+}
+
 function getTrackPoint(trackData, t) {
   if (t <= 0) return trackData.points[0].clone();
   if (t >= 1) return trackData.points[trackData.points.length - 1].clone();
@@ -2232,6 +2404,40 @@ function animate() {
   updateCheckpoints(center);
   checkFinish();
   animateCollectible(delta);
+  animateStarItems(delta);
+
+  // Star invincibility color flash effect
+  if (state.starActive > 0) {
+    // Save original color once when star activates
+    if (!state.starOriginalColor) {
+      const ch = CONFIG.characters.find((c) => c.id === state.selectedKart) || CONFIG.characters[0];
+      state.starOriginalColor = ch.color;
+    }
+    // Flash random colors at high frequency
+    const flashColor = new THREE.Color().setHSL(Math.random(), 1.0, 0.5);
+    car.traverse((child) => {
+      if (child.isMesh && child.material?.color && !child.material.transparent) {
+        child.material.color.copy(flashColor);
+        child.material.emissive = flashColor.clone().multiplyScalar(0.3);
+        child.material.emissiveIntensity = 0.8;
+        child.material.needsUpdate = true;
+      }
+    });
+    // Rainbow particles while invincible
+    spawnDustParticles(center, 3, Math.random(), Math.random(), Math.random());
+  } else if (state.starOriginalColor) {
+    // Restore original character color when star ends
+    const origColor = new THREE.Color(state.starOriginalColor);
+    car.traverse((child) => {
+      if (child.isMesh && child.material?.color && !child.material.transparent) {
+        child.material.emissiveIntensity = 0;
+        child.material.needsUpdate = true;
+      }
+    });
+    // Rebuild the kart with original colors
+    applySelectedKartToCar(state.selectedKart);
+    state.starOriginalColor = null;
+  }
 
   // U3: Collectible burst on pickup
   if (state.collectibleCollected && !prevCollected && collectible) {
@@ -2266,11 +2472,26 @@ function animate() {
   if (state.collisionHit) playSound("collision");
   if (state.turboJustActivated) playSound("turbo");
   if (state.trampolineJustLaunched) playSound("trampoline");
+  if (state.starJustActivated) {
+    playSound("star");
+    // Burst of rainbow particles when picking up star
+    for (let i = 0; i < 40; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 3 + Math.random() * 5;
+      const vy = 4 + Math.random() * 5;
+      spawnParticle(
+        center.x, center.y + 1, center.z,
+        Math.cos(angle) * speed, vy, Math.sin(angle) * speed,
+        Math.random(), Math.random(), Math.random(),
+        0.8 + Math.random() * 0.6
+      );
+    }
+  }
 
   // G5: Engine sound
   updateEngineSound(state.speed);
 
-  if (state.lavaHit && !state.finished) {
+  if (state.lavaHit && !state.finished && state.starActive <= 0) {
     state.lavaHit = false;
     playSound("lava");
     if (deathFlash) {
@@ -2374,6 +2595,8 @@ function resetRun() {
   state.collectibleCollected = false;
   state.turboActive = 0;
   state.lavaHit = false;
+  state.starActive = 0;
+  state.starOriginalColor = null;
   prevCollected = false;
   finishPanel.classList.add("hidden");
   if (finishNext) {
@@ -2386,6 +2609,8 @@ function resetRun() {
     collectible.mesh.visible = true;
   }
   if (trampolines) trampolines.forEach((t) => { t.launched = false; });
+  if (starItems) starItems.forEach((s) => { s.collected = false; s.mesh.visible = true; });
+  if (grayRamps) grayRamps.forEach(() => {});
   checkpoints.forEach((gate) => {
     if (gate?.userData?.bannerMaterial) {
       gate.userData.bannerMaterial.color.set(0xffffff);

@@ -1,16 +1,26 @@
 import { CONFIG } from "../constants.js";
 
-export function updateWorldPhysics({ state, track, obstacles, trees, turboPads, trampolines, lavaZones, mudZones, collectible, delta }) {
+export function updateWorldPhysics({ state, track, obstacles, trees, turboPads, trampolines, lavaZones, mudZones, collectible, starItems, delta }) {
   const carHalfX = CONFIG.car.halfX;
   const carProgressHalf = CONFIG.car.halfZ / track.total;
   state.collisionHit = false;
   state.turboJustActivated = false;
   state.trampolineJustLaunched = false;
+  state.starJustActivated = false;
+
+  // Decrement star timer
+  if (state.starActive > 0) {
+    state.starActive = Math.max(0, state.starActive - delta);
+  }
+
+  const isInvincible = state.starActive > 0;
+
   obstacles.forEach((obstacle) => {
     if (state.jumpY > obstacle.height * 0.6) return;
     const dx = Math.abs(state.lateral - obstacle.lateral);
     const dz = Math.abs(state.progress - obstacle.t);
     if (dx < carHalfX + obstacle.lateralHalf && dz < carProgressHalf + obstacle.progressHalf) {
+      if (isInvincible) return; // Invincible: pass through obstacles
       const pushDir = Math.sign(state.lateral - obstacle.lateral) || 1;
       state.lateral += pushDir * CONFIG.obstacles.push * delta;
       state.lateralVel *= 0.2;
@@ -22,11 +32,11 @@ export function updateWorldPhysics({ state, track, obstacles, trees, turboPads, 
   });
 
   trees.forEach((tree) => {
-    // Trees are ~5 u tall; allow the car to fly over the trunk without collision
     if (state.jumpY > 2.5) return;
     const dx = Math.abs(state.lateral - tree.lateral);
     const dz = Math.abs(state.progress - tree.t);
     if (dx < carHalfX + tree.lateralHalf && dz < carProgressHalf + tree.progressHalf) {
+      if (isInvincible) return; // Invincible: pass through trees
       const pushDir = Math.sign(state.lateral - tree.lateral) || 1;
       state.lateral += pushDir * CONFIG.trees.push * delta;
       state.lateralVel *= CONFIG.trees.lateralDamping;
@@ -63,22 +73,21 @@ export function updateWorldPhysics({ state, track, obstacles, trees, turboPads, 
 
   if (!state.lavaHit && !state.finished) {
     (lavaZones ?? []).forEach((zone) => {
-      // La losa de lava mide ~0.28 + burbujas ~0.55 → seguro si el coche vuela > 1.4 u
       if (state.jumpY > 1.4) return;
       const dx = Math.abs(state.lateral - zone.lateral);
       const dz = Math.abs(state.progress - zone.t);
       if (dx < carHalfX + zone.lateralHalf && dz < carProgressHalf + zone.progressHalf) {
-        state.lavaHit = true;
+        if (!isInvincible) state.lavaHit = true; // Invincible: lava doesn't kill
       }
     });
   }
 
   (mudZones ?? []).forEach((zone) => {
-    // El barro solo frena al coche cuando rueda por él, no cuando vuela
     if (state.jumpY > 0.8) return;
     const dx = Math.abs(state.lateral - zone.lateral);
     const dz = Math.abs(state.progress - zone.t);
     if (dx < carHalfX + zone.lateralHalf && dz < carProgressHalf + zone.progressHalf) {
+      if (isInvincible) return; // Invincible: mud doesn't slow
       if (state.speed > CONFIG.mud.maxSpeed) state.speed = CONFIG.mud.maxSpeed;
       if (state.speed < -CONFIG.mud.maxSpeed) state.speed = -CONFIG.mud.maxSpeed;
       state.lateralVel *= 0.85;
@@ -93,4 +102,16 @@ export function updateWorldPhysics({ state, track, obstacles, trees, turboPads, 
       state.collectibleCollected = true;
     }
   }
+
+  // Star pickup
+  (starItems ?? []).forEach((star) => {
+    if (star.collected) return;
+    const dx = Math.abs(state.lateral - star.lateral);
+    const dz = Math.abs(state.progress - star.t);
+    if (dx < carHalfX + star.lateralHalf && dz < carProgressHalf + star.progressHalf) {
+      star.collected = true;
+      state.starActive = CONFIG.star.duration;
+      state.starJustActivated = true;
+    }
+  });
 }

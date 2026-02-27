@@ -33,6 +33,7 @@ export function updatePhysics({ delta, state, input, track, trackOps, world }) {
     lavaZones: world.lavaZones,
     mudZones: world.mudZones,
     collectible: world.collectible,
+    starItems: world.starItems,
     delta,
   });
 
