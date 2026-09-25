@@ -13,8 +13,9 @@ Testing that engine on desktop does not certify the physical Android tablet GPU.
 
 ## Older-tablet performance
 
-The ⚡ button toggles optional light quality, remembered on this device. Normal
-quality remains the default; light quality uses 0.65 pixel ratio (42.25% of normal
+The ⚡ button toggles light quality, remembered on this device. Light quality is
+the default when no choice is saved; an explicit normal-quality choice is kept.
+Light quality uses 0.65 pixel ratio (42.25% of normal
 raster area) and disables shadows without changing cars, obstacles or physics.
 Titles, selectors, the educational challenge and hidden tabs suspend the race,
 audio and countdown timers. The vehicle preview stops rendering when closed.

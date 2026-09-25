@@ -13,6 +13,9 @@ test('hidden work stops; racing, selectors and optional light quality remain usa
   });
   const sample=()=>page.evaluate(()=>window.__sample());
   await page.goto('/');await solveGate(page);
+  await expect(page.locator('#quality-toggle')).toHaveAttribute('aria-pressed','true');
+  expect((await sample()).ratio).toBe(0.65);
+  await page.locator('#quality-toggle').click();
   await page.waitForTimeout(250);expect((await sample()).main).toBe(0);
   await page.locator('#title-vehicles').click();
   await expect.poll(async()=>(await sample()).preview).toBeGreaterThan(2);
@@ -51,5 +54,10 @@ test('hidden work stops; racing, selectors and optional light quality remain usa
   await page.screenshot({path:test.info().outputPath('light-tablet.png')});
   await page.reload();await solveGate(page);expect((await sample()).ratio).toBe(0.65);await expect(page.locator('#quality-toggle')).toHaveAttribute('aria-pressed','true');
   await page.locator('#quality-toggle').click();expect((await sample()).ratio).toBe(1);
+  const selectedCharacter=await page.evaluate(()=>localStorage.getItem('selectedCharacter'));
+  await page.reload();await solveGate(page);
+  await expect(page.locator('#quality-toggle')).toHaveAttribute('aria-pressed','false');
+  expect((await sample()).ratio).toBe(1);
+  expect(await page.evaluate(()=>localStorage.getItem('selectedCharacter'))).toBe(selectedCharacter);
   expect(errors).toEqual([]);
 });

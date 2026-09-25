@@ -35,9 +35,10 @@ assert.ok(baseline.collided,'fixture must exercise collision');
 let updates=0;const stepper=createFixedStepper(()=>updates++);
 assert.equal(stepper.advance(5),15,'long stalls are bounded to 250 ms');
 stepper.advance(1/120);stepper.reset();assert.equal(stepper.advance(1/120),0,'pause discards pending fraction');
-assert.equal(readLightMode({getItem:()=>null}),false);
+assert.equal(readLightMode({getItem:()=>null}),true);
 assert.equal(readLightMode({getItem:()=> 'true'}),true);
-assert.equal(readLightMode({getItem(){throw Error('blocked');}}),false);
+assert.equal(readLightMode({getItem:()=> 'false'}),false,'explicit normal preference must survive the new default');
+assert.equal(readLightMode({getItem(){throw Error('blocked');}}),true);
 assert.equal(LIGHT_PIXEL_RATIO**2,0.42250000000000004);
 console.log('Physics: exact original 60 Hz results at 10/15/30/60 FPS; ramp peak',baseline.peakJump.toFixed(3),'m; collisions exercised. Light mode raster area: 42.25% of normal.');
 

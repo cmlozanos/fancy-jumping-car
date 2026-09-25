@@ -3,7 +3,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { updatePhysics } from "./physics.js";
 import { CONFIG } from "./constants.js";
 import { getPortraitDataURL, drawCharacterPortrait } from "./portraits.js";
-import { createFixedStepper, readLightMode, LIGHT_PIXEL_RATIO } from './performance.js';
+import { createFixedStepper, readLightMode, LIGHT_PIXEL_RATIO } from './performance.js?v=20260925-4';
 
 const gameTimers = LearningGate.createTimers();
 let educationLocked = true;

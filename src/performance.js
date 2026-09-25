@@ -2,7 +2,7 @@
 export const FIXED_STEP = 1 / 60;
 export const MAX_FRAME_TIME = 0.25;
 export const LIGHT_PIXEL_RATIO = 0.65;
-export const DEFAULT_LIGHT_MODE = false;
+export const DEFAULT_LIGHT_MODE = true;
 
 export function createFixedStepper(update) {
   let remainder = 0;
