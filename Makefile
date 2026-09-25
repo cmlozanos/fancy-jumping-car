@@ -10,6 +10,7 @@ check:
 	node --check learning-gate.js
 	node --check sw.js
 	node tools/check.mjs
+	node tools/check-performance.mjs
 
 install-tests:
 	npm ci

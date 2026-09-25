@@ -3,11 +3,17 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { updatePhysics } from "./physics.js";
 import { CONFIG } from "./constants.js";
 import { getPortraitDataURL, drawCharacterPortrait } from "./portraits.js";
+import { createFixedStepper, readLightMode, LIGHT_PIXEL_RATIO } from './performance.js';
 
 const gameTimers = LearningGate.createTimers();
 let educationLocked = true;
 let educationGate;
 let soundEnabled = false;
+let lightMode = readLightMode(window.localStorage);
+let raceBlocked = true;
+const fixedSimulation = createFixedStepper(simulate);
+const starMaterials = new Map();
+const flashColor = new THREE.Color();
 
 function releaseInput() {
   Object.keys(input).forEach(key => { input[key] = false; });
@@ -75,7 +81,6 @@ const state = {
   countdownActive: false,
   selectedKart: savedKart,
   starActive: 0,
-  starOriginalColor: null,
 };
 
 const input = {
@@ -90,9 +95,9 @@ scene.background = new THREE.Color(CONFIG.colors.sky);
 
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
 const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1));
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, lightMode ? LIGHT_PIXEL_RATIO : 1));
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.shadowMap.enabled = true;
+renderer.shadowMap.enabled = !lightMode;
 renderer.shadowMap.type = THREE.BasicShadowMap;
 container.appendChild(renderer.domElement);
 
@@ -227,6 +232,8 @@ function updateParticles(dt) {
     p.x += p.vx * dt; p.y += p.vy * dt; p.z += p.vz * dt;
     p.vy -= 9.8 * dt; // gravity
   }
+}
+function uploadParticles() {
   const count = Math.min(particles.length, MAX_PARTICLES);
   for (let i = 0; i < count; i++) {
     const p = particles[i];
@@ -2119,7 +2126,8 @@ function updateCheckpoints(center) {
     }
     state.checkpointIndex += 1;
   }
-  hudCheckpoint.textContent = `${state.checkpointIndex}/${state.checkpoints.length}`;
+  const label = `${state.checkpointIndex}/${state.checkpoints.length}`;
+  if (hudCheckpoint.textContent !== label) hudCheckpoint.textContent = label;
 }
 
 function checkFinish() {
@@ -2139,7 +2147,11 @@ function checkFinish() {
   }
 }
 
+let lastHudUpdate = -Infinity;
 function updateHud() {
+  const now = performance.now();
+  if (now - lastHudUpdate < 100) return;
+  lastHudUpdate = now;
   hudTime.textContent = state.time.toFixed(2);
   hudSpeed.textContent = Math.round(state.speed * 3.6);
   if (hudCollectible) hudCollectible.textContent = state.collectibleCollected ? "¡Sí!" : "No";
@@ -2198,7 +2210,7 @@ function initPreviewRenderer() {
   const h = canvas.clientHeight || 225;
 
   prevRenderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
-  prevRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1));
+  prevRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, lightMode ? LIGHT_PIXEL_RATIO : 1));
   prevRenderer.setSize(w, h, false);
   prevRenderer.shadowMap.enabled = false;
 
@@ -2228,13 +2240,64 @@ function initPreviewRenderer() {
   const grid = new THREE.GridHelper(7, 7, 0x441888, 0x220c44);
   prevScene.add(grid);
 
-  function animatePreview() {
+  startPreview();
+}
+
+function animatePreview() {
+  prevAnimId = null;
+  if (educationLocked || document.hidden || vehicleMenu.classList.contains('hidden')) return;
+  if (prevKartGroup) prevKartGroup.rotation.y += 0.012;
+  prevRenderer.render(prevScene, prevCamera);
+  prevAnimId = requestAnimationFrame(animatePreview);
+}
+
+function startPreview() {
+  if (prevRenderer && prevAnimId === null && !educationLocked && !document.hidden && !vehicleMenu.classList.contains('hidden')) {
     prevAnimId = requestAnimationFrame(animatePreview);
-    if (educationLocked) return;
-    if (prevKartGroup) prevKartGroup.rotation.y += 0.012;
-    prevRenderer.render(prevScene, prevCamera);
   }
-  animatePreview();
+}
+
+function stopPreview() {
+  if (prevAnimId !== null) cancelAnimationFrame(prevAnimId);
+  prevAnimId = null;
+}
+
+function syncActivity() {
+  raceBlocked = educationLocked || document.hidden || !titleScreen.classList.contains('hidden') || !vehicleMenu.classList.contains('hidden') || !levelMenu.classList.contains('hidden');
+  releaseInput();
+  fixedSimulation.reset();
+  clock.getDelta();
+  lastHudUpdate = -Infinity;
+  if (raceBlocked) {
+    gameTimers.pause();
+    if (audioCtx) audioCtx.suspend().catch(() => {});
+  } else {
+    gameTimers.resume();
+    if (audioCtx && soundEnabled) audioCtx.resume().catch(() => {});
+  }
+  if (educationLocked || document.hidden || vehicleMenu.classList.contains('hidden')) stopPreview();
+  else startPreview();
+}
+
+function applyQuality() {
+  const ratio = Math.min(window.devicePixelRatio || 1, lightMode ? LIGHT_PIXEL_RATIO : 1);
+  renderer.setPixelRatio(ratio);
+  const shadowsChanged = renderer.shadowMap.enabled !== !lightMode;
+  renderer.shadowMap.enabled = !lightMode;
+  // Three r160 bakes USE_SHADOWMAP into programs. Refresh only on a quality
+  // switch, never per animation frame, so old shadows cannot remain frozen.
+  if (shadowsChanged) {
+    const materials = new Set();
+    scene.traverse((child) => {
+      if (child.material) (Array.isArray(child.material) ? child.material : [child.material]).forEach(material => materials.add(material));
+    });
+    materials.forEach(material => { material.needsUpdate = true; });
+  }
+  if (prevRenderer) prevRenderer.setPixelRatio(ratio);
+  const button = document.getElementById('quality-toggle');
+  button.setAttribute('aria-pressed', String(lightMode));
+  button.setAttribute('aria-label', lightMode ? 'Modo ligero activado. Cambiar a calidad normal' : 'Activar modo ligero');
+  button.title = lightMode ? 'Modo ligero' : 'Calidad normal';
 }
 
 function updatePreviewKart(characterId) {
@@ -2282,6 +2345,7 @@ function updatePreviewKart(characterId) {
 }
 
 function applySelectedKartToCar(characterId) {
+  restoreStarAppearance();
   state.selectedKart = characterId;
   window.localStorage.setItem("selectedCharacter", characterId);
   const oldModel = car.userData.model;
@@ -2304,8 +2368,10 @@ function applySelectedKartToCar(characterId) {
 function openVehicleMenu() {
   buildVehicleMenu();
   vehicleMenu.classList.remove("hidden");
+  syncActivity();
   // Init preview after menu is visible so canvas has layout size
   requestAnimationFrame(() => {
+    if (vehicleMenu.classList.contains('hidden')) return;
     initPreviewRenderer();
     updatePreviewKart(state.selectedKart);
   });
@@ -2344,7 +2410,7 @@ function bindVehicleMenu() {
   });
 
   if (vehicleClose) {
-    vehicleClose.addEventListener("click", () => vehicleMenu.classList.add("hidden"));
+    vehicleClose.addEventListener("click", () => { vehicleMenu.classList.add("hidden"); syncActivity(); });
   }
   if (titleVehicles) {
     titleVehicles.addEventListener("click", openVehicleMenu);
@@ -2389,20 +2455,7 @@ function spawnDustParticles(center, count, r, g, b) {
 
 let prevCollected = false;
 
-function animate() {
-  if (educationGate) educationGate.check();
-  if (educationLocked) { clock.getDelta(); requestAnimationFrame(animate); return; }
-  const rawDelta = clock.getDelta();
-  // B4/T4: Clamp delta to prevent physics explosion on tab-switch
-  const delta = Math.min(rawDelta, 0.1);
-
-  // If countdown is active, block input and don't advance game time
-  if (state.countdownActive) {
-    renderer.render(scene, camera);
-    requestAnimationFrame(animate);
-    return;
-  }
-
+function simulate(delta) {
   if (!state.finished) {
     state.time += delta;
   }
@@ -2426,37 +2479,9 @@ function animate() {
   animateCollectible(delta);
   animateStarItems(delta);
 
-  // Star invincibility color flash effect
+  // Emit at the simulation rate, independently of screen refresh rate.
   if (state.starActive > 0) {
-    // Save original color once when star activates
-    if (!state.starOriginalColor) {
-      const ch = CONFIG.characters.find((c) => c.id === state.selectedKart) || CONFIG.characters[0];
-      state.starOriginalColor = ch.color;
-    }
-    // Flash random colors at high frequency
-    const flashColor = new THREE.Color().setHSL(Math.random(), 1.0, 0.5);
-    car.traverse((child) => {
-      if (child.isMesh && child.material?.color && !child.material.transparent) {
-        child.material.color.copy(flashColor);
-        child.material.emissive = flashColor.clone().multiplyScalar(0.3);
-        child.material.emissiveIntensity = 0.8;
-        child.material.needsUpdate = true;
-      }
-    });
-    // Rainbow particles while invincible
     spawnDustParticles(center, 3, Math.random(), Math.random(), Math.random());
-  } else if (state.starOriginalColor) {
-    // Restore original character color when star ends
-    const origColor = new THREE.Color(state.starOriginalColor);
-    car.traverse((child) => {
-      if (child.isMesh && child.material?.color && !child.material.transparent) {
-        child.material.emissiveIntensity = 0;
-        child.material.needsUpdate = true;
-      }
-    });
-    // Rebuild the kart with original colors
-    applySelectedKartToCar(state.selectedKart);
-    state.starOriginalColor = null;
   }
 
   // U3: Collectible burst on pickup
@@ -2508,9 +2533,6 @@ function animate() {
     }
   }
 
-  // G5: Engine sound
-  updateEngineSound(state.speed);
-
   if (state.lavaHit && !state.finished && state.starActive <= 0) {
     state.lavaHit = false;
     playSound("lava");
@@ -2521,9 +2543,47 @@ function animate() {
     }
     resetRun();
   }
+}
+
+function restoreStarAppearance() {
+  starMaterials.forEach((original, material) => {
+    material.color.copy(original.color);
+    material.emissive.copy(original.emissive);
+    material.emissiveIntensity = original.intensity;
+  });
+  starMaterials.clear();
+}
+
+function updateStarAppearance() {
+  if (state.starActive <= 0) { restoreStarAppearance(); return; }
+  if (starMaterials.size === 0) {
+    car.traverse((child) => {
+      const material = child.material;
+      if (child.isMesh && material?.color && material.emissive && !material.transparent && !starMaterials.has(material)) {
+        starMaterials.set(material, { color: material.color.clone(), emissive: material.emissive.clone(), intensity: material.emissiveIntensity });
+      }
+    });
+  }
+  flashColor.setHSL(Math.random(), 1, 0.5);
+  starMaterials.forEach((original, material) => {
+    material.color.copy(flashColor);
+    material.emissive.copy(flashColor).multiplyScalar(0.3);
+    material.emissiveIntensity = 0.8;
+  });
+}
+
+function animate() {
+  requestAnimationFrame(animate);
+  if (educationGate) educationGate.check();
+  const delta = clock.getDelta();
+  if (raceBlocked || document.hidden) return;
+  if (state.countdownActive) fixedSimulation.reset();
+  else fixedSimulation.advance(delta);
+  updateStarAppearance();
+  uploadParticles();
+  updateEngineSound(state.speed);
   updateHud();
   renderer.render(scene, camera);
-  requestAnimationFrame(animate);
 }
 
 function bindControls() {
@@ -2580,18 +2640,21 @@ function bindLevelMenu() {
     applyLevel(button.dataset.level);
     resetRun();
     levelMenu.classList.add("hidden");
+    syncActivity();
     startCountdown();
   });
 
   if (openLevels) {
     openLevels.addEventListener("click", () => {
       levelMenu.classList.remove("hidden");
+      syncActivity();
     });
   }
 
   if (levelClose) {
     levelClose.addEventListener("click", () => {
       levelMenu.classList.add("hidden");
+      syncActivity();
     });
   }
 }
@@ -2617,7 +2680,6 @@ function resetRun() {
   state.turboActive = 0;
   state.lavaHit = false;
   state.starActive = 0;
-  state.starOriginalColor = null;
   applySelectedKartToCar(state.selectedKart);
   prevCollected = false;
   finishPanel.classList.add("hidden");
@@ -2667,6 +2729,7 @@ function showTitleScreen() {
   if (titleScreen) titleScreen.classList.remove("hidden");
   const appEl = document.getElementById("app");
   if (appEl) appEl.classList.add("hidden");
+  syncActivity();
 }
 
 function hideTitleScreen() {
@@ -2674,12 +2737,13 @@ function hideTitleScreen() {
   if (titleScreen) titleScreen.classList.add("hidden");
   const appEl = document.getElementById("app");
   if (appEl) appEl.classList.remove("hidden");
+  syncActivity();
   startCountdown();
 }
 
 bindControls();
 window.addEventListener('blur', releaseInput);
-document.addEventListener('visibilitychange', () => { if (document.hidden) releaseInput(); });
+document.addEventListener('visibilitychange', () => { syncActivity(); });
 buildLevelMenu();
 buildVehicleMenu();
 bindColorPicker();
@@ -2719,15 +2783,11 @@ educationGate = LearningGate.mount({
   gameId: 'fancy-jumping-car',
   onLock() {
     educationLocked = true;
-    gameTimers.pause();
-    releaseInput();
-    if (audioCtx) audioCtx.suspend().catch(() => {});
+    syncActivity();
   },
   onUnlock() {
-    clock.getDelta();
     educationLocked = false;
-    gameTimers.resume();
-    if (audioCtx && soundEnabled) audioCtx.resume().catch(() => {});
+    syncActivity();
   }
 });
 document.getElementById('sound-toggle').addEventListener('click', () => {
@@ -2736,7 +2796,16 @@ document.getElementById('sound-toggle').addEventListener('click', () => {
   button.textContent = soundEnabled ? '🔊' : '🔇';
   button.setAttribute('aria-pressed', String(soundEnabled));
   button.setAttribute('aria-label', soundEnabled ? 'Desactivar sonido' : 'Activar sonido');
-  if (soundEnabled) { initAudio(); if (audioCtx) audioCtx.resume().catch(() => {}); }
+  if (soundEnabled) {
+    initAudio();
+    if (audioCtx) (raceBlocked ? audioCtx.suspend() : audioCtx.resume()).catch(() => {});
+  }
   else if (audioCtx) audioCtx.suspend().catch(() => {});
 });
+document.getElementById('quality-toggle').addEventListener('click', () => {
+  lightMode = !lightMode;
+  try { window.localStorage.setItem('fancy-light-mode', String(lightMode)); } catch (_) {}
+  applyQuality();
+});
+applyQuality();
 requestAnimationFrame(animate);

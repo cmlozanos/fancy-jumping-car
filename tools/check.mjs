@@ -21,7 +21,8 @@ const testWindow=eventTarget(),testDocument=eventTarget(),touch=eventTarget(),cl
 touch.dataset={control:'right'};
 touch.classList={add(name){classes.add(name);},remove(name){classes.delete(name);}};
 const input={left:false,right:false,action:false,reverse:false};
-vm.runInNewContext(release+bindings+'\nbindControls();\n'+interruptions,{input,controlButtons:[touch],window:testWindow,document:testDocument});
+const inputContext=vm.createContext({input,controlButtons:[touch],window:testWindow,document:testDocument,syncActivity(){vm.runInContext('releaseInput()',inputContext);}});
+vm.runInContext(release+bindings+'\nbindControls();\n'+interruptions,inputContext);
 for(const interruption of ['blur','visibilitychange','pointercancel']){
   testWindow.emit('keydown',{key:'ArrowLeft'});
   touch.emit('pointerdown',{preventDefault(){}});
