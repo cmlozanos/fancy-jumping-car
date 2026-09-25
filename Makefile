@@ -3,7 +3,22 @@ PYTHON := $(VENV)/bin/python
 PIP := $(VENV)/bin/pip
 PORT ?= 8080
 
-.PHONY: run venv install
+.PHONY: run venv install check install-tests test
+
+check:
+	node --check src/main.js
+	node --check learning-gate.js
+	node --check sw.js
+	node tools/check.mjs
+
+install-tests:
+	npm ci
+
+test:
+	npm test
+
+icons:
+	node tools/icons.cjs
 
 run: venv install
 	$(PYTHON) -m http.server $(PORT)

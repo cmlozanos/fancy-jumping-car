@@ -4,6 +4,11 @@ import { updatePhysics } from "./physics.js";
 import { CONFIG } from "./constants.js";
 import { getPortraitDataURL, drawCharacterPortrait } from "./portraits.js";
 
+const gameTimers = LearningGate.createTimers();
+let educationLocked = true;
+let educationGate;
+let soundEnabled = false;
+
 /* ─── DOM REFERENCES ─── */
 const container = document.getElementById("game");
 const hudTime = document.getElementById("hud-time");
@@ -80,7 +85,7 @@ scene.background = new THREE.Color(CONFIG.colors.sky);
 
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
 const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, CONFIG.render.pixelRatio));
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1));
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.BasicShadowMap;
@@ -239,6 +244,7 @@ function updateParticles(dt) {
 let audioCtx = null;
 const sounds = {};
 function initAudio() {
+  if (!soundEnabled || educationLocked) return;
   if (audioCtx) return;
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   // Create engine hum oscillator — triangle is smoother than sawtooth
@@ -259,7 +265,7 @@ function initAudio() {
   sounds.engineGain = engineGain;
 }
 function playSound(type) {
-  if (!audioCtx) return;
+  if (!audioCtx || !soundEnabled || educationLocked) return;
   const now = audioCtx.currentTime;
   const gain = audioCtx.createGain();
   gain.connect(audioCtx.destination);
@@ -2149,7 +2155,7 @@ function startCountdown(callback) {
     { text: "GO!", delay: 2400 },
   ];
   steps.forEach(({ text, delay }) => {
-    setTimeout(() => {
+    gameTimers.set(() => {
       countdownText.textContent = text;
       countdownText.style.animation = "none";
       void countdownText.offsetWidth;
@@ -2163,7 +2169,7 @@ function startCountdown(callback) {
       }
     }, delay);
   });
-  setTimeout(() => {
+  gameTimers.set(() => {
     countdownOverlay.classList.add("hidden");
     state.countdownActive = false;
     if (callback) callback();
@@ -2187,7 +2193,7 @@ function initPreviewRenderer() {
   const h = canvas.clientHeight || 225;
 
   prevRenderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
-  prevRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  prevRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1));
   prevRenderer.setSize(w, h, false);
   prevRenderer.shadowMap.enabled = false;
 
@@ -2219,6 +2225,7 @@ function initPreviewRenderer() {
 
   function animatePreview() {
     prevAnimId = requestAnimationFrame(animatePreview);
+    if (educationLocked) return;
     if (prevKartGroup) prevKartGroup.rotation.y += 0.012;
     prevRenderer.render(prevScene, prevCamera);
   }
@@ -2378,6 +2385,8 @@ function spawnDustParticles(center, count, r, g, b) {
 let prevCollected = false;
 
 function animate() {
+  if (educationGate) educationGate.check();
+  if (educationLocked) { clock.getDelta(); requestAnimationFrame(animate); return; }
   const rawDelta = clock.getDelta();
   // B4/T4: Clamp delta to prevent physics explosion on tab-switch
   const delta = Math.min(rawDelta, 0.1);
@@ -2503,7 +2512,7 @@ function animate() {
     if (deathFlash) {
       deathFlash.classList.remove("hidden");
       void deathFlash.offsetWidth;
-      setTimeout(() => deathFlash.classList.add("hidden"), 700);
+      gameTimers.set(() => deathFlash.classList.add("hidden"), 700);
     }
     resetRun();
   }
@@ -2698,4 +2707,28 @@ if (titlePlay) {
 scene.add(dirLight.target);
 
 showTitleScreen();
+educationGate = LearningGate.mount({
+  gameId: 'fancy-jumping-car',
+  onLock() {
+    educationLocked = true;
+    gameTimers.pause();
+    Object.keys(input).forEach(key => { input[key] = false; });
+    if (audioCtx) audioCtx.suspend().catch(() => {});
+  },
+  onUnlock() {
+    clock.getDelta();
+    educationLocked = false;
+    gameTimers.resume();
+    if (audioCtx && soundEnabled) audioCtx.resume().catch(() => {});
+  }
+});
+document.getElementById('sound-toggle').addEventListener('click', () => {
+  soundEnabled = !soundEnabled;
+  const button = document.getElementById('sound-toggle');
+  button.textContent = soundEnabled ? '🔊' : '🔇';
+  button.setAttribute('aria-pressed', String(soundEnabled));
+  button.setAttribute('aria-label', soundEnabled ? 'Desactivar sonido' : 'Activar sonido');
+  if (soundEnabled) { initAudio(); if (audioCtx) audioCtx.resume().catch(() => {}); }
+  else if (audioCtx) audioCtx.suspend().catch(() => {});
+});
 requestAnimationFrame(animate);
