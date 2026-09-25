@@ -9,6 +9,11 @@ let educationLocked = true;
 let educationGate;
 let soundEnabled = false;
 
+function releaseInput() {
+  Object.keys(input).forEach(key => { input[key] = false; });
+  controlButtons.forEach(button => button.classList.remove('active'));
+}
+
 /* ─── DOM REFERENCES ─── */
 const container = document.getElementById("game");
 const hudTime = document.getElementById("hud-time");
@@ -2538,6 +2543,7 @@ function bindControls() {
       input[key] = false;
       button.classList.remove("active");
     });
+    button.addEventListener('pointercancel', releaseInput);
   });
 
   window.addEventListener("keydown", (event) => {
@@ -2672,6 +2678,8 @@ function hideTitleScreen() {
 }
 
 bindControls();
+window.addEventListener('blur', releaseInput);
+document.addEventListener('visibilitychange', () => { if (document.hidden) releaseInput(); });
 buildLevelMenu();
 buildVehicleMenu();
 bindColorPicker();
@@ -2712,7 +2720,7 @@ educationGate = LearningGate.mount({
   onLock() {
     educationLocked = true;
     gameTimers.pause();
-    Object.keys(input).forEach(key => { input[key] = false; });
+    releaseInput();
     if (audioCtx) audioCtx.suspend().catch(() => {});
   },
   onUnlock() {
