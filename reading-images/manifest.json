@@ -1,0 +1,906 @@
+{
+  "license": "CC-BY-NC-SA-4.0",
+  "verified": "2026-09-27",
+  "images": [
+    {
+      "word": "mesa",
+      "id": 3129,
+      "width": 298,
+      "height": 298,
+      "bytes": 1659,
+      "sha256": "542c48b2be8026f094b615362ee32a8dc11a684276931d4ee0517b7e728a1fca",
+      "source": "https://static.arasaac.org/pictograms/3129/3129_300.png"
+    },
+    {
+      "word": "cama",
+      "id": 25900,
+      "width": 298,
+      "height": 298,
+      "bytes": 1788,
+      "sha256": "aac1abbed5a26bc4c2b1b57f50d3adde41de0aedcc1c5f4f33e41bb80efd74bb",
+      "source": "https://static.arasaac.org/pictograms/25900/25900_300.png"
+    },
+    {
+      "word": "casa",
+      "id": 2317,
+      "width": 298,
+      "height": 298,
+      "bytes": 7026,
+      "sha256": "0bdac5cdb639b6cf2d9a6dcae73682d691e0bed914df4fba8a146728a7316f99",
+      "source": "https://static.arasaac.org/pictograms/2317/2317_300.png"
+    },
+    {
+      "word": "mano",
+      "id": 2928,
+      "width": 298,
+      "height": 298,
+      "bytes": 14224,
+      "sha256": "a89c2413f49b182542328b3a6e9862f4cec8f2129004372fb67453b52cf14484",
+      "source": "https://static.arasaac.org/pictograms/2928/2928_300.png"
+    },
+    {
+      "word": "luna",
+      "id": 2933,
+      "width": 298,
+      "height": 298,
+      "bytes": 3041,
+      "sha256": "a73116231296fb829998e4f5d0efd0d0cc9bdb3c1e811b648a8aae072c088e41",
+      "source": "https://static.arasaac.org/pictograms/2933/2933_300.png"
+    },
+    {
+      "word": "pato",
+      "id": 28479,
+      "width": 298,
+      "height": 298,
+      "bytes": 9847,
+      "sha256": "58d12670f59afbe6126ff31864ebbf9aa08a19b9de6a60b457b342315a58e578",
+      "source": "https://static.arasaac.org/pictograms/28479/28479_300.png"
+    },
+    {
+      "word": "gato",
+      "id": 7114,
+      "width": 298,
+      "height": 298,
+      "bytes": 6843,
+      "sha256": "db750c33ccc84585aaf21523fa1df64607641d1c7eaf102a7203297eb6b2806f",
+      "source": "https://static.arasaac.org/pictograms/7114/7114_300.png"
+    },
+    {
+      "word": "vaca",
+      "id": 2609,
+      "width": 298,
+      "height": 298,
+      "bytes": 9144,
+      "sha256": "8dd7ab4a6b994dd8e8a8062c44038c4420bd27960b30010ecbd3c04af4d3a31b",
+      "source": "https://static.arasaac.org/pictograms/2609/2609_300.png"
+    },
+    {
+      "word": "foca",
+      "id": 2397,
+      "width": 298,
+      "height": 298,
+      "bytes": 10397,
+      "sha256": "8f1118603d380d644a81c773c1f61b778152fe3f193fe51add68402e7013d4bf",
+      "source": "https://static.arasaac.org/pictograms/2397/2397_300.png"
+    },
+    {
+      "word": "oso",
+      "id": 2488,
+      "width": 298,
+      "height": 298,
+      "bytes": 9374,
+      "sha256": "ce2f02c7fb932bbd463e6b88285c9f45fbc8931f81abc396989e5ee621a65c7d",
+      "source": "https://static.arasaac.org/pictograms/2488/2488_300.png"
+    },
+    {
+      "word": "pera",
+      "id": 2561,
+      "width": 298,
+      "height": 298,
+      "bytes": 6335,
+      "sha256": "dd1543520ef948aac06a7e4d2633a94f853dfdcf3fcfdc66d672df698c753e80",
+      "source": "https://static.arasaac.org/pictograms/2561/2561_300.png"
+    },
+    {
+      "word": "uva",
+      "id": 3247,
+      "width": 298,
+      "height": 298,
+      "bytes": 12095,
+      "sha256": "ee3f4ede647ce198a9f7521c4c4ccda03e581bce517d1b13d150e02b66385871",
+      "source": "https://static.arasaac.org/pictograms/3247/3247_300.png"
+    },
+    {
+      "word": "coco",
+      "id": 10224,
+      "width": 298,
+      "height": 298,
+      "bytes": 10844,
+      "sha256": "6bbabb339b8649e0e76926ded18734f8a2ef7d784bf93677599666a3220bc1d1",
+      "source": "https://static.arasaac.org/pictograms/10224/10224_300.png"
+    },
+    {
+      "word": "piña",
+      "id": 2525,
+      "width": 298,
+      "height": 298,
+      "bytes": 10225,
+      "sha256": "1009a5f6b15d67752960faf293cfe21c1b6a5558f38476693797a12194190f37",
+      "source": "https://static.arasaac.org/pictograms/2525/2525_300.png"
+    },
+    {
+      "word": "ajo",
+      "id": 2641,
+      "width": 298,
+      "height": 298,
+      "bytes": 16726,
+      "sha256": "9f5217f2dacf8ef5a930b0dad54121a969118b01d49109e96c76390cc23d990a",
+      "source": "https://static.arasaac.org/pictograms/2641/2641_300.png"
+    },
+    {
+      "word": "taza",
+      "id": 2582,
+      "width": 298,
+      "height": 298,
+      "bytes": 6963,
+      "sha256": "fe5e2d625ed4ff15285a66941ce3e1824592e3c30c08ba51b864f1f751f803c2",
+      "source": "https://static.arasaac.org/pictograms/2582/2582_300.png"
+    },
+    {
+      "word": "vaso",
+      "id": 2610,
+      "width": 298,
+      "height": 298,
+      "bytes": 11936,
+      "sha256": "70bb757a11b36c9366ae113ea100e03074be4d79717695456a60ec34641b745b",
+      "source": "https://static.arasaac.org/pictograms/2610/2610_300.png"
+    },
+    {
+      "word": "ojo",
+      "id": 6573,
+      "width": 298,
+      "height": 298,
+      "bytes": 9788,
+      "sha256": "60f50303b5f78c3e818532786457857820d2a00ad2da1b83ac4b559e2971752d",
+      "source": "https://static.arasaac.org/pictograms/6573/6573_300.png"
+    },
+    {
+      "word": "pan",
+      "id": 2494,
+      "width": 298,
+      "height": 298,
+      "bytes": 7531,
+      "sha256": "3515a9606f408ea4a5e6ade334975aa830e39ae333bd733f3886e1abe0886e4f",
+      "source": "https://static.arasaac.org/pictograms/2494/2494_300.png"
+    },
+    {
+      "word": "sol",
+      "id": 2798,
+      "width": 298,
+      "height": 298,
+      "bytes": 12519,
+      "sha256": "7ac612cb1ccb670498a4a6dc9afcfc904af0ae86a6b25e632552e2cf58aaff6e",
+      "source": "https://static.arasaac.org/pictograms/2798/2798_300.png"
+    },
+    {
+      "word": "dado",
+      "id": 2731,
+      "width": 298,
+      "height": 298,
+      "bytes": 7148,
+      "sha256": "0742847919fe5074c06f1c5837d691f46b61709d9967c71e06a40fd069f90a21",
+      "source": "https://static.arasaac.org/pictograms/2731/2731_300.png"
+    },
+    {
+      "word": "bota",
+      "id": 8299,
+      "width": 298,
+      "height": 298,
+      "bytes": 4177,
+      "sha256": "479139dcb45115c019fd3c1c92df8659944e950c314c6ed22c6c2eb42665a52f",
+      "source": "https://static.arasaac.org/pictograms/8299/8299_300.png"
+    },
+    {
+      "word": "pala",
+      "id": 34543,
+      "width": 298,
+      "height": 298,
+      "bytes": 7766,
+      "sha256": "c132fbe47d85e3064f7f503131ddee901a7dfbe2fb10d03877da47695c4d7e5d",
+      "source": "https://static.arasaac.org/pictograms/34543/34543_300.png"
+    },
+    {
+      "word": "lupa",
+      "id": 9927,
+      "width": 298,
+      "height": 298,
+      "bytes": 8293,
+      "sha256": "da082f4bbe4d5905cea93cf3dd649756fa39e1f724f4c1f50085d4e7c0be6498",
+      "source": "https://static.arasaac.org/pictograms/9927/9927_300.png"
+    },
+    {
+      "word": "moto",
+      "id": 7166,
+      "width": 298,
+      "height": 298,
+      "bytes": 8198,
+      "sha256": "9294ad3a50efbdf6a6a65b223ab77a02d52dba61c29a50dad13dfa97e2c7e899",
+      "source": "https://static.arasaac.org/pictograms/7166/7166_300.png"
+    },
+    {
+      "word": "boca",
+      "id": 2663,
+      "width": 298,
+      "height": 298,
+      "bytes": 14296,
+      "sha256": "d47bbb09bd4144e60a094d2117feab0dc93106e070017f26ccb11d8469fa8275",
+      "source": "https://static.arasaac.org/pictograms/2663/2663_300.png"
+    },
+    {
+      "word": "sofá",
+      "id": 25479,
+      "width": 298,
+      "height": 298,
+      "bytes": 3367,
+      "sha256": "c278beeab41a503a523ba4d2c02d86ffe7e055565d3f2f562849eb8c7644cd9d",
+      "source": "https://static.arasaac.org/pictograms/25479/25479_300.png"
+    },
+    {
+      "word": "bebé",
+      "id": 6060,
+      "width": 298,
+      "height": 298,
+      "bytes": 6285,
+      "sha256": "4d2fbce09158a3c542bd0a2d9b0e3bf746614db17ccc550530992ff387852554",
+      "source": "https://static.arasaac.org/pictograms/6060/6060_300.png"
+    },
+    {
+      "word": "cuna",
+      "id": 5980,
+      "width": 298,
+      "height": 298,
+      "bytes": 12865,
+      "sha256": "a5cea7bab3084ced830b22731d554ece6b721cda945d2a142bfe2fa272636a49",
+      "source": "https://static.arasaac.org/pictograms/5980/5980_300.png"
+    },
+    {
+      "word": "dedo",
+      "id": 3298,
+      "width": 298,
+      "height": 298,
+      "bytes": 5976,
+      "sha256": "1dbbfa8a069502ef6e6b06f3d180cb8bae450152335f46fd094bba6e7616ae39",
+      "source": "https://static.arasaac.org/pictograms/3298/3298_300.png"
+    },
+    {
+      "word": "nido",
+      "id": 7173,
+      "width": 298,
+      "height": 298,
+      "bytes": 11912,
+      "sha256": "f63a60e03e1acfa9c203b48fff40b758ab066488b51096145325ca411fa86158",
+      "source": "https://static.arasaac.org/pictograms/7173/7173_300.png"
+    },
+    {
+      "word": "nube",
+      "id": 2883,
+      "width": 298,
+      "height": 298,
+      "bytes": 11475,
+      "sha256": "3b546f5b80d2037df11406f2e34c6648b0a4ac27fbd1c81c80f1b55e233b1999",
+      "source": "https://static.arasaac.org/pictograms/2883/2883_300.png"
+    },
+    {
+      "word": "rana",
+      "id": 28473,
+      "width": 298,
+      "height": 298,
+      "bytes": 13504,
+      "sha256": "28336272fe246c93e05a41730a9a9a2d56dbaed8e561a5a04d2ff8149cb71993",
+      "source": "https://static.arasaac.org/pictograms/28473/28473_300.png"
+    },
+    {
+      "word": "lobo",
+      "id": 5892,
+      "width": 298,
+      "height": 298,
+      "bytes": 8200,
+      "sha256": "e34a6360d6154b5b730f2168d321dba55238c0788b249095f9f28ff04283e56a",
+      "source": "https://static.arasaac.org/pictograms/5892/5892_300.png"
+    },
+    {
+      "word": "toro",
+      "id": 2595,
+      "width": 298,
+      "height": 298,
+      "bytes": 6009,
+      "sha256": "3b86251c63170c7e04fbecba3b178529536ea161b99c71db400fdf8063102b33",
+      "source": "https://static.arasaac.org/pictograms/2595/2595_300.png"
+    },
+    {
+      "word": "rata",
+      "id": 2821,
+      "width": 298,
+      "height": 298,
+      "bytes": 9696,
+      "sha256": "f8e1a840a458434fdfd972de09f7e7ee2c02ed2d6adcaa54b8ff406769550573",
+      "source": "https://static.arasaac.org/pictograms/2821/2821_300.png"
+    },
+    {
+      "word": "pavo",
+      "id": 2509,
+      "width": 298,
+      "height": 298,
+      "bytes": 12462,
+      "sha256": "11b363f1b91274d1a9d68d541d4e73fbf338207856f6585016760bcc86ca08f3",
+      "source": "https://static.arasaac.org/pictograms/2509/2509_300.png"
+    },
+    {
+      "word": "oveja",
+      "id": 2489,
+      "width": 298,
+      "height": 298,
+      "bytes": 7744,
+      "sha256": "7d931ee12e7a31b3a4171d9aaa71df45b2de746058c7cad59b61123c83b40c27",
+      "source": "https://static.arasaac.org/pictograms/2489/2489_300.png"
+    },
+    {
+      "word": "abeja",
+      "id": 24823,
+      "width": 298,
+      "height": 298,
+      "bytes": 9427,
+      "sha256": "dc19c49a7b31f9cc40e967b122fc62f2d2d6b37bb539638ebb296e7ae89e77f7",
+      "source": "https://static.arasaac.org/pictograms/24823/24823_300.png"
+    },
+    {
+      "word": "perro",
+      "id": 7202,
+      "width": 298,
+      "height": 298,
+      "bytes": 6818,
+      "sha256": "cdefa9e70f918805bce7ffab4c889bbf545cf639e29d075a9ea652010874e5b3",
+      "source": "https://static.arasaac.org/pictograms/7202/7202_300.png"
+    },
+    {
+      "word": "burro",
+      "id": 2291,
+      "width": 298,
+      "height": 298,
+      "bytes": 7111,
+      "sha256": "b1ed504c9d191649a5372acd6719825d513e891e52bc2ffc394e3ae81221d7cf",
+      "source": "https://static.arasaac.org/pictograms/2291/2291_300.png"
+    },
+    {
+      "word": "gallo",
+      "id": 2404,
+      "width": 298,
+      "height": 298,
+      "bytes": 14596,
+      "sha256": "3dc156c928ba5f2722f91e37bf691436b2a7b24fd05dcb38c4df43f9b0f593ce",
+      "source": "https://static.arasaac.org/pictograms/2404/2404_300.png"
+    },
+    {
+      "word": "pollo",
+      "id": 2533,
+      "width": 298,
+      "height": 298,
+      "bytes": 6384,
+      "sha256": "a781134254a7234234bf9f25cb61dd72c4ccf3274c697ee538d5754927594105",
+      "source": "https://static.arasaac.org/pictograms/2533/2533_300.png"
+    },
+    {
+      "word": "silla",
+      "id": 3155,
+      "width": 298,
+      "height": 298,
+      "bytes": 1891,
+      "sha256": "0b1cc4162a7c95cdeb5795e3c0e8d62f18f5c294d17245fc1adeeb784fd23aa3",
+      "source": "https://static.arasaac.org/pictograms/3155/3155_300.png"
+    },
+    {
+      "word": "llave",
+      "id": 8153,
+      "width": 298,
+      "height": 298,
+      "bytes": 7451,
+      "sha256": "afc86110f519be69cc4962e563fef8d6f03b10740b9afa9c6664f9fe68efae64",
+      "source": "https://static.arasaac.org/pictograms/8153/8153_300.png"
+    },
+    {
+      "word": "coche",
+      "id": 2339,
+      "width": 298,
+      "height": 298,
+      "bytes": 9023,
+      "sha256": "5fbe4b799acaa50bdaf7566891b393c926382af77a09d30a202a20bf126d8f56",
+      "source": "https://static.arasaac.org/pictograms/2339/2339_300.png"
+    },
+    {
+      "word": "nariz",
+      "id": 2887,
+      "width": 298,
+      "height": 298,
+      "bytes": 4562,
+      "sha256": "2735e6033cd76232740225e28ebc2d010f57ac1d8151910197f76da802a4c6cd",
+      "source": "https://static.arasaac.org/pictograms/2887/2887_300.png"
+    },
+    {
+      "word": "huevo",
+      "id": 2427,
+      "width": 298,
+      "height": 298,
+      "bytes": 7023,
+      "sha256": "02479f5af1081f2498c999162cbfbad3bafa45b7c33eabb8e5f216d0e8d46464",
+      "source": "https://static.arasaac.org/pictograms/2427/2427_300.png"
+    },
+    {
+      "word": "queso",
+      "id": 2541,
+      "width": 298,
+      "height": 298,
+      "bytes": 15157,
+      "sha256": "8f3851b132183c6599b424d134b55413749216f290c3068d5db7f5261ffb2a5e",
+      "source": "https://static.arasaac.org/pictograms/2541/2541_300.png"
+    },
+    {
+      "word": "pez",
+      "id": 2520,
+      "width": 299,
+      "height": 299,
+      "bytes": 6021,
+      "sha256": "7f730452b8442ff32a0d8b2b45a5178f7f0254c380dba04b80e4ca59e3cf6c9e",
+      "source": "https://static.arasaac.org/pictograms/2520/2520_300.png"
+    },
+    {
+      "word": "flor",
+      "id": 7104,
+      "width": 298,
+      "height": 298,
+      "bytes": 8805,
+      "sha256": "23d1e01aacac4e3088df092362b482228bf29c53a3ad7a52c181b13506a96c88",
+      "source": "https://static.arasaac.org/pictograms/7104/7104_300.png"
+    },
+    {
+      "word": "tren",
+      "id": 2603,
+      "width": 298,
+      "height": 298,
+      "bytes": 4470,
+      "sha256": "b8c6bb9c7f1b65e45754860e089e6342ed80b3ef56c4abab5bc0dce3d04f5b9c",
+      "source": "https://static.arasaac.org/pictograms/2603/2603_300.png"
+    },
+    {
+      "word": "árbol",
+      "id": 3057,
+      "width": 298,
+      "height": 298,
+      "bytes": 7866,
+      "sha256": "fb3da1347f1c1de8c523212ca090efd177c9cfe87ddf3dd830479b1a44e6a5df",
+      "source": "https://static.arasaac.org/pictograms/3057/3057_300.png"
+    },
+    {
+      "word": "barco",
+      "id": 6932,
+      "width": 298,
+      "height": 298,
+      "bytes": 4992,
+      "sha256": "4617f0340d5400435d967b86bb387eee8f78ba0b44036ba27e93e59d46b783a9",
+      "source": "https://static.arasaac.org/pictograms/6932/6932_300.png"
+    },
+    {
+      "word": "bolsa",
+      "id": 23849,
+      "width": 298,
+      "height": 298,
+      "bytes": 6717,
+      "sha256": "8e50ca2390f6262d4f61cb6882eed621d7464132a6ba24a801036b852b0bb81b",
+      "source": "https://static.arasaac.org/pictograms/23849/23849_300.png"
+    },
+    {
+      "word": "falda",
+      "id": 2391,
+      "width": 298,
+      "height": 298,
+      "bytes": 9624,
+      "sha256": "68fcb9c1a698de7b7a600ede9525efef1295a8fdf49101f8b7db94bd68410d65",
+      "source": "https://static.arasaac.org/pictograms/2391/2391_300.png"
+    },
+    {
+      "word": "gorro",
+      "id": 2412,
+      "width": 298,
+      "height": 298,
+      "bytes": 7521,
+      "sha256": "592d4c8da9c9e75dcfa764e1f9a1f90e0c05395182ae532cad4e13e03b1481fc",
+      "source": "https://static.arasaac.org/pictograms/2412/2412_300.png"
+    },
+    {
+      "word": "libro",
+      "id": 25191,
+      "width": 298,
+      "height": 298,
+      "bytes": 8572,
+      "sha256": "79697594359a2c647dab1d6ea5105b9df806e0d391a21e0ce854b860aba12d2f",
+      "source": "https://static.arasaac.org/pictograms/25191/25191_300.png"
+    },
+    {
+      "word": "caja",
+      "id": 7054,
+      "width": 298,
+      "height": 298,
+      "bytes": 11544,
+      "sha256": "a655a908057815223e5095ef051a8094629cabad033e2c722659ba58bcf4f491",
+      "source": "https://static.arasaac.org/pictograms/7054/7054_300.png"
+    },
+    {
+      "word": "león",
+      "id": 25187,
+      "width": 298,
+      "height": 298,
+      "bytes": 10781,
+      "sha256": "401101994d409970d4bc51e602744329e6012cfeaa8a3db2e76998def5385238",
+      "source": "https://static.arasaac.org/pictograms/25187/25187_300.png"
+    },
+    {
+      "word": "melón",
+      "id": 2469,
+      "width": 298,
+      "height": 298,
+      "bytes": 9684,
+      "sha256": "38121509fa4f6d04a39ba2ae1465bbc69e45bb1de8c4f0ee90a75872152fffe1",
+      "source": "https://static.arasaac.org/pictograms/2469/2469_300.png"
+    },
+    {
+      "word": "limón",
+      "id": 3022,
+      "width": 298,
+      "height": 298,
+      "bytes": 9759,
+      "sha256": "e6ca7abd63e2afb598b7c1a2a9427528980e03ef80dc6ae0921a1ed617893a3a",
+      "source": "https://static.arasaac.org/pictograms/3022/3022_300.png"
+    },
+    {
+      "word": "jamón",
+      "id": 2433,
+      "width": 298,
+      "height": 298,
+      "bytes": 11254,
+      "sha256": "934ffd6057d03f3fe42bc3e8157df02a320c29958816f2ba7e24c48fae1cfbdb",
+      "source": "https://static.arasaac.org/pictograms/2433/2433_300.png"
+    },
+    {
+      "word": "jabón",
+      "id": 8094,
+      "width": 298,
+      "height": 298,
+      "bytes": 9593,
+      "sha256": "39d20eb0d8c6719cdb08cd9eb3dc5e85d392a38d2b8c74707f68d16f5306a0d5",
+      "source": "https://static.arasaac.org/pictograms/8094/8094_300.png"
+    },
+    {
+      "word": "globo",
+      "id": 2408,
+      "width": 298,
+      "height": 298,
+      "bytes": 9520,
+      "sha256": "3ffe8219e868904c7510bb806c06af007fbc5ef3436bad304614583735c3518a",
+      "source": "https://static.arasaac.org/pictograms/2408/2408_300.png"
+    },
+    {
+      "word": "botón",
+      "id": 2668,
+      "width": 298,
+      "height": 298,
+      "bytes": 12073,
+      "sha256": "d624c5e14445cd2b85ffb19779d8de3821a95cde4b3ff73724342463e0811c61",
+      "source": "https://static.arasaac.org/pictograms/2668/2668_300.png"
+    },
+    {
+      "word": "avión",
+      "id": 2264,
+      "width": 298,
+      "height": 298,
+      "bytes": 11223,
+      "sha256": "6bddd572b4d188f57583d2964000748f201054b72b1a505bca71039f3ffe9f19",
+      "source": "https://static.arasaac.org/pictograms/2264/2264_300.png"
+    },
+    {
+      "word": "oreja",
+      "id": 2871,
+      "width": 298,
+      "height": 298,
+      "bytes": 10425,
+      "sha256": "72fb0748c068270021a94e108977420243920250e4b60a60af431a71aeba9a88",
+      "source": "https://static.arasaac.org/pictograms/2871/2871_300.png"
+    },
+    {
+      "word": "balón",
+      "id": 2269,
+      "width": 298,
+      "height": 298,
+      "bytes": 6653,
+      "sha256": "b0b6cad9bad8fe1d64f8dbdce564ff4918e556299dce214e32db4ba6af1a0ddf",
+      "source": "https://static.arasaac.org/pictograms/2269/2269_300.png"
+    },
+    {
+      "word": "bici",
+      "id": 2277,
+      "width": 298,
+      "height": 298,
+      "bytes": 13797,
+      "sha256": "b4b56979336505e925d3e780bb20346545cf5f9e67686c3a97401ad64cc8a0bb",
+      "source": "https://static.arasaac.org/pictograms/2277/2277_300.png"
+    },
+    {
+      "word": "robot",
+      "id": 6208,
+      "width": 298,
+      "height": 298,
+      "bytes": 7775,
+      "sha256": "cdc634f51b2731e15e0685d0f394a53c37743393052cc37f5b135e4c570d57ea",
+      "source": "https://static.arasaac.org/pictograms/6208/6208_300.png"
+    },
+    {
+      "word": "piano",
+      "id": 2521,
+      "width": 298,
+      "height": 298,
+      "bytes": 10188,
+      "sha256": "7711fb1e998a2fccdc21acb0837d8b039543734b8ffeff47bd41459565c837ca",
+      "source": "https://static.arasaac.org/pictograms/2521/2521_300.png"
+    },
+    {
+      "word": "cubo",
+      "id": 34363,
+      "width": 298,
+      "height": 298,
+      "bytes": 7430,
+      "sha256": "c90bb44d5459abda5e32de642d21dadbed6e6e5ab12d2275b0c4ffaca056f285",
+      "source": "https://static.arasaac.org/pictograms/34363/34363_300.png"
+    },
+    {
+      "word": "lápiz",
+      "id": 2440,
+      "width": 298,
+      "height": 298,
+      "bytes": 5004,
+      "sha256": "f11578f1c2f2eca5b39083b94ac5020cf3c95c95f84b3dec4fbb851a219fa67f",
+      "source": "https://static.arasaac.org/pictograms/2440/2440_300.png"
+    },
+    {
+      "word": "regla",
+      "id": 2815,
+      "width": 298,
+      "height": 298,
+      "bytes": 9195,
+      "sha256": "f0d254e46d1ea2da220da4d69f6de63af3cd9158032aa56aff18238522ad5df0",
+      "source": "https://static.arasaac.org/pictograms/2815/2815_300.png"
+    },
+    {
+      "word": "goma",
+      "id": 2409,
+      "width": 298,
+      "height": 298,
+      "bytes": 6412,
+      "sha256": "9ab86d2d876ebd14a8da01cf30c41daefdd097cf484e30f6a44ebdd0d0df5288",
+      "source": "https://static.arasaac.org/pictograms/2409/2409_300.png"
+    },
+    {
+      "word": "peine",
+      "id": 2852,
+      "width": 298,
+      "height": 298,
+      "bytes": 6101,
+      "sha256": "081874e5f76697b5e760f857deb5c2308e2615771cf78bce27973cb9f90341ef",
+      "source": "https://static.arasaac.org/pictograms/2852/2852_300.png"
+    },
+    {
+      "word": "reloj",
+      "id": 2549,
+      "width": 298,
+      "height": 298,
+      "bytes": 9068,
+      "sha256": "d763d45c8526e218aeae15033be29d86dfc7c72c56990243b9feddf4f230eecb",
+      "source": "https://static.arasaac.org/pictograms/2549/2549_300.png"
+    },
+    {
+      "word": "plato",
+      "id": 2532,
+      "width": 298,
+      "height": 298,
+      "bytes": 14815,
+      "sha256": "c95069d50e128b59bf2a3ed66a3ca623357de3e7c6ceb3ac6921a101530277cc",
+      "source": "https://static.arasaac.org/pictograms/2532/2532_300.png"
+    },
+    {
+      "word": "vela",
+      "id": 6242,
+      "width": 298,
+      "height": 298,
+      "bytes": 2957,
+      "sha256": "78e7db5637c6050b4cbb97fbb5279e5c179dc0b3097ef8c1e8c5a2fa2482c5e5",
+      "source": "https://static.arasaac.org/pictograms/6242/6242_300.png"
+    },
+    {
+      "word": "hoja",
+      "id": 5077,
+      "width": 299,
+      "height": 299,
+      "bytes": 12104,
+      "sha256": "1b6cc3c1148fd3f722f2ae4f564f2591cbc5bbf3448efa8bc7037d63419765cc",
+      "source": "https://static.arasaac.org/pictograms/5077/5077_300.png"
+    },
+    {
+      "word": "leche",
+      "id": 2445,
+      "width": 298,
+      "height": 298,
+      "bytes": 12665,
+      "sha256": "fb7e5de2589dd593e2bed2ba6cce9d5ed41f430be8f3310b5fe9b924456cd6b3",
+      "source": "https://static.arasaac.org/pictograms/2445/2445_300.png"
+    },
+    {
+      "word": "zumo",
+      "id": 11461,
+      "width": 298,
+      "height": 298,
+      "bytes": 13190,
+      "sha256": "52ee9f3c800cd99982bf8206879b1559a6d7e631d26ed1ccf645f7d0c2a47777",
+      "source": "https://static.arasaac.org/pictograms/11461/11461_300.png"
+    },
+    {
+      "word": "sal",
+      "id": 25576,
+      "width": 298,
+      "height": 298,
+      "bytes": 12419,
+      "sha256": "626cd9362cc4b341fba3daf4f4109524d8737428c65152f2e4f68e61ed5e4e73",
+      "source": "https://static.arasaac.org/pictograms/25576/25576_300.png"
+    },
+    {
+      "word": "sopa",
+      "id": 2573,
+      "width": 298,
+      "height": 298,
+      "bytes": 13100,
+      "sha256": "e8b577084a9e2e2851f6a3dc459cb61d9f74389a3330bc583757fe9826381367",
+      "source": "https://static.arasaac.org/pictograms/2573/2573_300.png"
+    },
+    {
+      "word": "arroz",
+      "id": 39387,
+      "width": 299,
+      "height": 299,
+      "bytes": 9619,
+      "sha256": "dc4dbad919119074f277ebee7148d6b089b0a2faf367e699c3ce6b169577346c",
+      "source": "https://static.arasaac.org/pictograms/39387/39387_300.png"
+    },
+    {
+      "word": "fresa",
+      "id": 2400,
+      "width": 298,
+      "height": 298,
+      "bytes": 5796,
+      "sha256": "6c22aeb9927b5093568d4250bb3bee26e1b52210691ea07ff353c5a063850245",
+      "source": "https://static.arasaac.org/pictograms/2400/2400_300.png"
+    },
+    {
+      "word": "kiwi",
+      "id": 2955,
+      "width": 298,
+      "height": 298,
+      "bytes": 9133,
+      "sha256": "8d28c79b8f0ec381a9bd38cc4b002cb618b6e271beaee7dc0d892bbbadbae695",
+      "source": "https://static.arasaac.org/pictograms/2955/2955_300.png"
+    },
+    {
+      "word": "pasta",
+      "id": 8652,
+      "width": 298,
+      "height": 298,
+      "bytes": 16036,
+      "sha256": "ba5e5e10a4a0240da2a6f73d44ca05c95d8ce08897d0aa7f43df241a8ad70a8e",
+      "source": "https://static.arasaac.org/pictograms/8652/8652_300.png"
+    },
+    {
+      "word": "pizza",
+      "id": 2527,
+      "width": 298,
+      "height": 298,
+      "bytes": 17729,
+      "sha256": "d0217ec2be97a1e1f4f2c69f0b1810506f2a960cf220e0df6a6ff1c4926edd31",
+      "source": "https://static.arasaac.org/pictograms/2527/2527_300.png"
+    },
+    {
+      "word": "tarta",
+      "id": 25488,
+      "width": 298,
+      "height": 298,
+      "bytes": 7950,
+      "sha256": "c9ad65a43a916b0a2aa525eece47c8c56fc9a0003110ed4bfbdefd0335b987b0",
+      "source": "https://static.arasaac.org/pictograms/25488/25488_300.png"
+    },
+    {
+      "word": "hielo",
+      "id": 7128,
+      "width": 298,
+      "height": 298,
+      "bytes": 15092,
+      "sha256": "d1e7782cccb064cd3d56b42cf3c185e475c4c01eb54f8b917dcf62d3e3ffb02e",
+      "source": "https://static.arasaac.org/pictograms/7128/7128_300.png"
+    },
+    {
+      "word": "fuego",
+      "id": 4654,
+      "width": 298,
+      "height": 298,
+      "bytes": 13140,
+      "sha256": "b6c7b852a4a7b1f407ae459409a52dffdd047e22e6c06c67c5873cab81254795",
+      "source": "https://static.arasaac.org/pictograms/4654/4654_300.png"
+    },
+    {
+      "word": "nieve",
+      "id": 3135,
+      "width": 298,
+      "height": 298,
+      "bytes": 19090,
+      "sha256": "13d758efb6693e90f2ebdfcf1d28e0896fa149c08e561beff93212646fc6cef6",
+      "source": "https://static.arasaac.org/pictograms/3135/3135_300.png"
+    },
+    {
+      "word": "mono",
+      "id": 2477,
+      "width": 298,
+      "height": 298,
+      "bytes": 10411,
+      "sha256": "6eba28bfc18b34ebea65bf4023365579464843697913318b27ec8ff9868dfa7b",
+      "source": "https://static.arasaac.org/pictograms/2477/2477_300.png"
+    },
+    {
+      "word": "tigre",
+      "id": 2590,
+      "width": 298,
+      "height": 298,
+      "bytes": 13257,
+      "sha256": "a3864525519e66168d177925e533f764460013e8e3dbebc137aa1376e8a4b9f8",
+      "source": "https://static.arasaac.org/pictograms/2590/2590_300.png"
+    },
+    {
+      "word": "pulpo",
+      "id": 3379,
+      "width": 298,
+      "height": 298,
+      "bytes": 16668,
+      "sha256": "3064f89368b1eeda016ec99346b6b83947dee2eb7da0fa050002fbf2dee1505e",
+      "source": "https://static.arasaac.org/pictograms/3379/3379_300.png"
+    },
+    {
+      "word": "araña",
+      "id": 38275,
+      "width": 299,
+      "height": 299,
+      "bytes": 5732,
+      "sha256": "adba8171877615e4e0f772b64d3ff4fd2b0983226f02696cc211bdb0b97e3dd1",
+      "source": "https://static.arasaac.org/pictograms/38275/38275_300.png"
+    },
+    {
+      "word": "casco",
+      "id": 3075,
+      "width": 298,
+      "height": 298,
+      "bytes": 12940,
+      "sha256": "ea3bad296cd36dc80a11d6e2f737e71af157679e5fd32f68ca1778a86865dabc",
+      "source": "https://static.arasaac.org/pictograms/3075/3075_300.png"
+    },
+    {
+      "word": "papel",
+      "id": 8349,
+      "width": 298,
+      "height": 298,
+      "bytes": 2794,
+      "sha256": "c5fac4f7a171b79d49d928ba1310a754ab576c7204f4da73023b674e05649a0b",
+      "source": "https://static.arasaac.org/pictograms/8349/8349_300.png"
+    }
+  ]
+}

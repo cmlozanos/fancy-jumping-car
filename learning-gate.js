@@ -1,4 +1,4 @@
-/* Original educational gate. No third-party assets. Shared source for every game. */
+/* Original educational gate. Reading pictogram attribution: READING_ASSETS.md. */
 (function (root, factory) {
   'use strict';
   var api = factory();
@@ -7,6 +7,8 @@
 }(typeof window !== 'undefined' ? window : null, function () {
   'use strict';
   var INTERVAL = 10 * 60 * 1000;
+  var scriptURL = typeof document !== 'undefined' && document.currentScript ? document.currentScript.src : '';
+  var imageBase = scriptURL ? new URL('reading-images/', scriptURL).href : 'reading-images/';
   function line() { return Array.prototype.slice.call(arguments); }
   function arc(cx, cy, rx, ry, from, to, count) {
     var out = [], n = count || 28;
@@ -124,8 +126,24 @@
     state.active=false;state.failed=false;state.progress=0;state.ink=[];state.last=null;
     return valid;
   }
-  function challenge(random) {
-    var rng=random||Math.random,kind=Math.floor(rng()*3),a=Math.floor(rng()*10),b;
+  function shuffle(items, random) {
+    for(var i=items.length-1;i>0;i--){var j=Math.floor(random()*(i+1)),item=items[i];items[i]=items[j];items[j]=item;}
+    return items;
+  }
+  function readingChallenge(words, random, previous) {
+    var rng=random||Math.random,old=previous&&previous.choices||[];
+    if(!Array.isArray(words))return null;
+    var pool=shuffle(words.filter(function(item){return !old.some(function(p){return p.id===item.id;});}),rng),chosen=[];
+    for(var i=0;i<pool.length&&chosen.length<3;i++){
+      var candidate=pool[i];
+      if(!chosen.some(function(item){return item.id===candidate.id||item.word===candidate.word||item.groups.some(function(group){return candidate.groups.indexOf(group)>=0;});}))chosen.push(candidate);
+    }
+    if(chosen.length!==3)return null;
+    return {kind:'reading',word:chosen[0].word,answer:chosen[0].id,choices:shuffle(chosen,rng)};
+  }
+  function challenge(random, profile, words) {
+    var rng=random||Math.random,kind=Math.floor(rng()*(profile&&profile.reading?4:3)),a=Math.floor(rng()*10),b;
+    if(kind===3)return readingChallenge(words,rng,null)||{kind:'reading',word:'',answer:null,choices:[]};
     if(kind===2) return {kind:'trace',letter:letters[Math.floor(rng()*letters.length)]};
     b=Math.floor(rng()*(kind===0?10-a:a+1));
     return {kind:'math',a:a,b:b,operator:kind===0?'+':'−',answer:kind===0?a+b:a-b};
@@ -154,11 +172,12 @@
     };
   }
   var css = '#learning-gate{position:fixed;z-index:2147483647;inset:0;background:rgba(7,20,36,.96);display:flex;align-items:center;justify-content:center;padding:12px;box-sizing:border-box;color:#f5fafc;font:600 20px system-ui,-apple-system,Arial,sans-serif;overscroll-behavior:contain;touch-action:none}#learning-gate *{box-sizing:border-box}#learning-gate .gate-card{width:360px;max-width:100%;max-height:100%;overflow:auto;background:#193248;border:1px solid #456377;border-radius:26px;padding:18px;text-align:center;box-shadow:0 16px 70px #0006}#learning-gate .gate-top{display:flex;align-items:center;justify-content:space-between;font-size:28px}#learning-gate .gate-lock{color:#9cc8df}#learning-gate .gate-instruction{margin:8px 0;color:#cae1ec;font-size:15px;font-weight:500}#learning-gate #gate-prompt{display:block;font-size:48px;font-weight:800;line-height:1.3;margin:18px 0;letter-spacing:2px}#learning-gate .gate-keys{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}#learning-gate button{appearance:none;border:0;border-radius:15px;background:#edf6f9;color:#122d40;font:800 28px system-ui,Arial,sans-serif;min-width:44px;min-height:52px;cursor:pointer;touch-action:manipulation;padding:8px}#learning-gate button:focus-visible{outline:4px solid #ffce5a;outline-offset:2px}#learning-gate button:active{background:#ffce5a;transform:scale(.96)}#learning-gate [data-gate-key="0"]{grid-column:2}#learning-gate #gate-feedback{height:30px;font-size:22px;line-height:30px;color:#ffdf88;margin:8px 0 0}#learning-gate #gate-trace{display:block;width:100%;height:auto;max-height:48vh;aspect-ratio:1;background:#102739;border-radius:18px;touch-action:none}#learning-gate .gate-trace-footer{display:flex;justify-content:space-between;align-items:center;margin-top:10px}#learning-gate #gate-retry{font-size:24px;min-height:44px;background:#31556d;color:#fff}#learning-gate #gate-strokes{color:#7df0b5;letter-spacing:4px;font-size:18px}#learning-gate .gate-hidden{display:none!important}#learning-gate .gate-sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}@media(max-height:520px) and (min-width:500px){#learning-gate .gate-card{width:650px;padding:12px;display:grid;grid-template-columns:1fr 1fr;gap:0 18px}#learning-gate .gate-top{grid-column:1}#learning-gate .gate-instruction{grid-column:1}#learning-gate #gate-math,#learning-gate #gate-drawing{grid-column:2;grid-row:1/5}#learning-gate #gate-prompt{font-size:42px;margin:0 0 8px}#learning-gate button{min-height:42px;padding:3px}#learning-gate #gate-trace{max-height:64vh;width:auto;max-width:100%;margin:auto}#learning-gate #gate-feedback{grid-column:1}#learning-gate .gate-keys{gap:5px}}@media(prefers-reduced-motion:reduce){#learning-gate button:active{transform:none}}';
+  css += '#learning-gate .gate-reading-card{width:660px;display:block}#learning-gate #gate-word{font-size:clamp(42px,9vw,80px);font-weight:800;line-height:1.15;margin:6px 0 16px;letter-spacing:0;text-transform:none}#learning-gate .gate-pictures{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}#learning-gate .gate-pictures button{min-width:0;min-height:84px;padding:8px;background:#fff;border:3px solid transparent;border-radius:18px}#learning-gate .gate-pictures button:focus-visible{border-color:#ffce5a}#learning-gate .gate-pictures button:disabled{opacity:.65;cursor:wait}#learning-gate .gate-pictures img{display:block;width:100%;height:clamp(76px,20vw,160px);max-height:30vh;object-fit:contain;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}#learning-gate .gate-credit{font-size:11px;line-height:1.4;font-weight:400;margin:12px 0 0;color:#bad0dc}#learning-gate .gate-credit a{color:inherit}#learning-gate #gate-reading-retry{margin-top:12px}#learning-gate [hidden]{display:none!important}@media(max-height:520px) and (min-width:500px){#learning-gate .gate-reading-card .gate-top,#learning-gate .gate-reading-card .gate-instruction{display:none}#learning-gate .gate-reading-card{padding:12px}#learning-gate #gate-word{font-size:48px;margin:0 0 8px}#learning-gate .gate-reading-card #gate-feedback{height:24px;line-height:24px;margin-top:4px}#learning-gate .gate-pictures img{height:24vh}#learning-gate .gate-credit{margin-top:6px}}';
   function mount(options) {
     options=options||{};
     if(typeof document==='undefined'||!document.body) throw new Error('Mount LearningGate after document.body exists');
     if(document.getElementById('learning-gate')) throw new Error('Only one learning gate may be mounted at a time');
-    var locked=false,destroyed=false,nextAt=0,overlay=null,current=null,trace=null,pointer=null,previousFocus=null,previousOverflow='',lastNow=Date.now();
+    var locked=false,destroyed=false,nextAt=0,overlay=null,current=null,trace=null,pointer=null,previousFocus=null,previousOverflow='',lastNow=Date.now(),readingGeneration=0;
     var style=document.getElementById('learning-gate-style');
     if(!style){style=document.createElement('style');style.id='learning-gate-style';style.textContent=css;document.head.appendChild(style);}
     function announce(name){try{window.dispatchEvent(new CustomEvent('learninggate:'+name,{detail:{gameId:options.gameId||''}}));}catch(ignore){}}
@@ -170,7 +189,7 @@
       if(!inside(event.target)){if(event.cancelable)event.preventDefault();event.stopImmediatePropagation();}
     }
     function keepFocus(event){if(locked&&!inside(event.target)){event.stopPropagation();focusFirst();}}
-    function focusFirst(){if(overlay){var first=overlay.querySelector('button');(first||overlay).focus({preventScroll:true});}}
+    function focusFirst(){if(overlay){var buttons=Array.prototype.filter.call(overlay.querySelectorAll('button:not([disabled])'),function(button){return button.offsetWidth>0;});(buttons[0]||overlay).focus({preventScroll:true});}}
     function feedback(text){if(overlay)overlay.querySelector('#gate-feedback').textContent=text;}
     function unlock(){
       if(!locked||destroyed)return;
@@ -206,22 +225,61 @@
       canvas.addEventListener('pointerdown',down);canvas.addEventListener('pointermove',move);canvas.addEventListener('pointerup',up);canvas.addEventListener('pointercancel',up);canvas.addEventListener('lostpointercapture',up);
       overlay.querySelector('#gate-retry').onclick=function(){trace=newTrace(current.letter);pointer=null;feedback('');drawTrace();};
     }
+    function setupReading(previous){
+      if(previous)current=readingChallenge(window.LearningWords,Math.random,previous)||{kind:'reading',word:'',answer:null,choices:[]};
+      var round=current,generation=++readingGeneration,ready=false,failed=false,loaded=0,reading=overlay.querySelector('#gate-reading'),choices=reading.querySelector('.gate-pictures'),retry=reading.querySelector('#gate-reading-retry');
+      overlay.querySelector('.gate-card').classList.add('gate-reading-card');
+      overlay.querySelector('#gate-math').className='gate-hidden';overlay.querySelector('#gate-drawing').className='gate-hidden';
+      reading.className='';overlay.querySelector('#gate-instruction').textContent='👆';
+      reading.querySelector('#gate-word').textContent=round.word;choices.textContent='';retry.hidden=true;
+      function active(){return !!(locked&&overlay&&current===round&&generation===readingGeneration);}
+      function fail(){if(!active())return;failed=true;ready=false;retry.hidden=false;feedback('↻');choices.querySelectorAll('button').forEach(function(button){button.disabled=true;});}
+      function choose(item){
+        if(!active()||!ready)return;
+        ready=false;
+        if(item.id===round.answer){unlock();if(active())ready=true;return;}
+        feedback('↻');setupReading(round);
+      }
+      retry.onclick=function(){feedback('');setupReading();};
+      if(round.choices.length!==3){fail();return;}
+      round.choices.forEach(function(item){
+        var button=document.createElement('button'),image=document.createElement('img');
+        button.type='button';button.disabled=true;button.setAttribute('data-reading-id',String(item.id));button.setAttribute('aria-label',item.word);
+        image.alt=item.word;image.draggable=false;image.width=300;image.height=300;
+        image.onload=function(){
+          if(!active()||failed)return;
+          if(!image.naturalWidth){fail();return;}
+          loaded++;
+          if(loaded===3){ready=true;choices.querySelectorAll('button').forEach(function(b){b.disabled=false;});focusFirst();}
+        };
+        image.onerror=fail;button.onclick=function(){choose(item);};button.appendChild(image);choices.appendChild(button);
+        image.src=imageBase+item.id+'.png';
+      });
+    }
     function lock(){
       if(locked||destroyed)return;
-      locked=true;previousFocus=document.activeElement;previousOverflow=document.body.style.overflow;document.body.style.overflow='hidden';current=challenge();
+      locked=true;previousFocus=document.activeElement;previousOverflow=document.body.style.overflow;document.body.style.overflow='hidden';
+      var profile=window.LearningProfile?window.LearningProfile.read():null;
+      current=challenge(Math.random,profile,window.LearningWords);
       overlay=document.createElement('section');overlay.id='learning-gate';overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-label','Un pequeño reto para jugar');overlay.setAttribute('tabindex','-1');
       overlay.innerHTML='<div class="gate-card"><div class="gate-top"><span class="gate-lock" aria-hidden="true">🔒</span><span aria-hidden="true">🧠 → 🎮</span></div><p class="gate-instruction" id="gate-instruction"></p><div id="gate-math"><output id="gate-prompt"></output><div class="gate-keys"></div></div><div id="gate-drawing"><canvas id="gate-trace" aria-label="Sigue el trazo desde el punto amarillo" role="img"></canvas><div class="gate-trace-footer"><span id="gate-strokes" aria-label="Trazos completados"></span><button id="gate-retry" aria-label="Empezar la letra otra vez">↻</button></div></div><div id="gate-feedback" role="status" aria-live="polite"></div></div>';
       document.body.appendChild(overlay);
-      blockedEvents.forEach(function(name){overlay.addEventListener(name,function(e){e.stopPropagation();},{passive:false});});
+      var reading=document.createElement('div');reading.id='gate-reading';reading.className='gate-hidden';
+      reading.innerHTML='<p id="gate-word"></p><div class="gate-pictures"></div><button type="button" id="gate-reading-retry" aria-label="Volver a cargar las imágenes" hidden>↻</button><p class="gate-credit">Pictogramas: Sergio Palao · <a href="https://arasaac.org" target="_blank" rel="noopener noreferrer">ARASAAC</a> · Gobierno de Aragón · <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener noreferrer">CC BY-NC-SA 4.0</a></p>';
+      overlay.querySelector('.gate-card').insertBefore(reading,overlay.querySelector('#gate-feedback'));
+      blockedEvents.forEach(function(name){overlay.addEventListener(name,function(e){if(name==='contextmenu')e.preventDefault();e.stopPropagation();},{passive:false});});
       overlay.addEventListener('keydown',function(event){
         if(event.key==='Escape'){event.preventDefault();return;}
-        if(event.key==='Tab'){var buttons=Array.prototype.filter.call(overlay.querySelectorAll('button'),function(b){return b.offsetWidth>0;});var first=buttons[0],last=buttons[buttons.length-1];if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}}
+        if(event.key==='Tab'){var buttons=Array.prototype.filter.call(overlay.querySelectorAll('button:not([disabled]),a[href]'),function(b){return b.offsetWidth>0;});var first=buttons[0],last=buttons[buttons.length-1];if(!first){event.preventDefault();return;}if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}}
         if(current.kind==='math'&&/^[0-9]$/.test(event.key)){event.preventDefault();answer(Number(event.key));}
+        if(current.kind==='reading'&&/^[1-3]$/.test(event.key)){event.preventDefault();var choice=overlay.querySelectorAll('.gate-pictures button')[Number(event.key)-1];if(choice&&!choice.disabled)choice.click();}
       });
       if(current.kind==='math'){
         overlay.querySelector('#gate-drawing').className='gate-hidden';overlay.querySelector('#gate-instruction').textContent='👆 0 1 2 3 4 5 6 7 8 9';
         overlay.querySelector('#gate-prompt').textContent=current.a+' '+current.operator+' '+current.b+' = ?';
         var keys=overlay.querySelector('.gate-keys');[1,2,3,4,5,6,7,8,9,0].forEach(function(n){var button=document.createElement('button');button.type='button';button.setAttribute('data-gate-key',String(n));button.setAttribute('aria-label',String(n));button.textContent=String(n);button.onclick=function(){answer(n);};keys.appendChild(button);});
+      }else if(current.kind==='reading'){
+        setupReading();
       }else{
         overlay.querySelector('#gate-math').className='gate-hidden';overlay.querySelector('#gate-instruction').textContent='☝ ✍ '+current.letter;setupDrawing();
       }
@@ -248,5 +306,5 @@
       if(locked)document.body.style.overflow=previousOverflow;if(overlay)overlay.remove();overlay=null;
     }};
   }
-  return {mount:mount,createTimers:createTimers,Core:{interval:INTERVAL,challenge:challenge,letters:letters,glyphs:glyphs,newTrace:newTrace,beginTrace:beginTrace,moveTrace:moveTrace,endTrace:endTrace}};
+  return {mount:mount,createTimers:createTimers,Core:{interval:INTERVAL,challenge:challenge,readingChallenge:readingChallenge,letters:letters,glyphs:glyphs,newTrace:newTrace,beginTrace:beginTrace,moveTrace:moveTrace,endTrace:endTrace}};
 }));

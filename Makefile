@@ -1,3 +1,16 @@
+# Bundle sync only writes this repository; provide the canonical data directory explicitly.
+.DEFAULT_GOAL := check
+LEARNING_SOURCE ?=
+.PHONY: sync-gates check-gates
+
+sync-gates:
+	node tools/sync-learning-gate.mjs --source "$(LEARNING_SOURCE)"
+
+check-gates:
+	node tools/sync-learning-gate.mjs --check $(if $(LEARNING_SOURCE),--source "$(LEARNING_SOURCE)")
+
+check: check-gates
+
 VENV := .venv
 PYTHON := $(VENV)/bin/python
 PIP := $(VENV)/bin/pip
