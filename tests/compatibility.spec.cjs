@@ -1,9 +1,11 @@
 const {test,expect}=require('@playwright/test');
 const {solveGate}=require('./helpers/learning-fixture.cjs');
+const {checkTouchUI}=require('../tools/touch-check.cjs');
 test('touch start, countdown freeze, home, sound off and offline gate',async({page,context})=>{
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto('/');await expect(page.locator('#learning-gate')).toBeVisible();
  await solveGate(page);await expect(page.locator('#sound-toggle')).toHaveAttribute('aria-pressed','false');
+ await checkTouchUI(page, '#title-play', true);
  await expect(page.locator('#quality-toggle')).toHaveAttribute('aria-pressed','true');
  await expect(page.locator('.game-exit a')).toHaveAttribute('href','https://cmlozanos.github.io/games/');
  await page.locator('#title-play').click();
@@ -12,6 +14,11 @@ test('touch start, countdown freeze, home, sound off and offline gate',async({pa
  const text=await page.locator('#countdown-text').textContent();
  await page.waitForTimeout(3200);await expect(page.locator('#countdown-text')).toHaveText(text);
  await solveGate(page);await expect(page.locator('#countdown-overlay')).toHaveClass(/hidden/,{timeout:7000});
+ const touch=await context.newCDPSession(page),control=page.locator('[data-control="right"]'),box=await control.boundingBox();
+ await touch.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:box.x+box.width/2,y:box.y+box.height/2,id:1}]});
+ await page.waitForTimeout(800);await expect(control).toHaveClass(/active/);
+ await touch.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+ await expect(control).not.toHaveClass(/active/);await touch.detach();
  await page.evaluate(()=>navigator.serviceWorker.ready);await expect.poll(()=>page.evaluate(()=>!!navigator.serviceWorker.controller)).toBe(true);
  await context.setOffline(true);await page.reload();await expect(page.locator('#learning-gate')).toBeVisible();await solveGate(page);await expect(page.locator('#title-play')).toBeVisible();
  await expect(page.locator('#quality-toggle')).toHaveAttribute('aria-pressed','true');

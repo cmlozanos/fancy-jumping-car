@@ -15,6 +15,7 @@ check:
 install-tests:
 	npm ci
 
+# Includes tools/touch-check.cjs plus native long hold/release browser coverage.
 test:
 	npm test
 

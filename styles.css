@@ -26,6 +26,21 @@
   touch-action: manipulation;
 }
 
+/* Game surfaces do not offer text selection or native touch callouts. */
+body, canvas, button, a, img {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+input, textarea, select,
+[contenteditable]:not([contenteditable="false"]),
+[contenteditable]:not([contenteditable="false"]) * {
+  -webkit-touch-callout: default;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
 body {
   margin: 0;
   background: radial-gradient(circle at 20% 20%, #1a1050 0%, #0a0e1e 45%, #030308 100%);

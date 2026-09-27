@@ -30,3 +30,9 @@ marking shaders dirty. Particle buffer uploads happen once per displayed frame.
 `make test` also measures normal/light rendering through the real UI and checks
 preview shutdown, paused selectors, persisted quality and offline startup. Its
 frame counts are desktop observations, not a physical Android performance claim.
+
+## Touch holds — 20260927-2
+
+Game UI now suppresses WebKit callouts and explicitly restores selection/editing CSS for editable fields. The existing global context-menu handler and gesture policy are unchanged, including their pre-existing desktop/form context-menu suppression.
+
+`make test` includes `tools/touch-check.cjs`, keyboard editing and an 800 ms native-emulated control hold/release. `CHROME95_PATH` selects an installed legacy browser. Physical-tablet native menu behavior still needs device validation.
