@@ -67,7 +67,8 @@ for(const target of targets) {
   for(const file of ['learning-profile.js','reading-words.js','learning-gate.js']) {
     const tag=[...html.matchAll(/<script\b[^>]*src="([^"]+)"[^>]*>/g)].map(match=>match[1]).find(url=>url.split('?')[0].endsWith(file));
     assert.ok(tag&&!/^https?:/.test(tag),target+': local script '+file);
-    assert.ok(tag.includes('v=20260928-1')||tag.includes('v=__BUILD_VERSION__'),target+': versioned bundle '+file);
+    const version=file==='reading-words.js'?'20260928-1':'20260928-4';
+    assert.ok(tag.includes('v='+version)||tag.includes('v=__BUILD_VERSION__'),target+': versioned bundle '+file);
   }
   if(target==='public') {
     const config=read(root,'vite.config.ts').toString();

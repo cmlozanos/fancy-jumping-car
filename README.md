@@ -1,5 +1,10 @@
 # fancy-jumping-car
 
+The tablet profile in Games selects any combination of addition, subtraction,
+tracing and reading, with at least one active challenge type. This game honours
+that selection at entry and every ten minutes. Missing or invalid profiles keep
+the default challenges without changing sound preferences or gameplay.
+
 Static game, with local Three.js r160 and MIT license in `vendor/`. WebGL is
 required; pixel ratio is capped at one for older tablets. Existing cars, tracks
 and track layouts are unchanged. The educational challenge appears on entry and every

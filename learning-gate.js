@@ -142,11 +142,14 @@
     return {kind:'reading',word:chosen[0].word,answer:chosen[0].id,choices:shuffle(chosen,rng)};
   }
   function challenge(random, profile, words) {
-    var rng=random||Math.random,kind=Math.floor(rng()*(profile&&profile.reading?4:3)),a=Math.floor(rng()*10),b;
-    if(kind===3)return readingChallenge(words,rng,null)||{kind:'reading',word:'',answer:null,choices:[]};
-    if(kind===2) return {kind:'trace',letter:letters[Math.floor(rng()*letters.length)]};
-    b=Math.floor(rng()*(kind===0?10-a:a+1));
-    return {kind:'math',a:a,b:b,operator:kind===0?'+':'−',answer:kind===0?a+b:a-b};
+    var types=['addition','subtraction','trace','reading'],selected=profile&&profile.challenges,rng=random||Math.random;
+    var valid=Array.isArray(selected)&&selected.length>0&&selected.length<=types.length&&selected.every(function(type,index){return types.indexOf(type)>=0&&selected.indexOf(type)===index;});
+    if(!valid)selected=types.slice(0,profile&&profile.challenges===undefined&&profile.reading?4:3);
+    var kind=selected[Math.floor(rng()*selected.length)],a=Math.floor(rng()*10),b;
+    if(kind==='reading')return readingChallenge(words,rng,null)||{kind:'reading',word:'',answer:null,choices:[]};
+    if(kind==='trace') return {kind:'trace',letter:letters[Math.floor(rng()*letters.length)]};
+    b=Math.floor(rng()*(kind==='addition'?10-a:a+1));
+    return {kind:'math',a:a,b:b,operator:kind==='addition'?'+':'−',answer:kind==='addition'?a+b:a-b};
   }
   function createTimers() {
     var pending={},sequence=0,paused=false;
