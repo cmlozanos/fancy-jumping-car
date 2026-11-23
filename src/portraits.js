@@ -25,7 +25,7 @@ const arc = (cx, x, y, rx, ry, s, en, col) => {
 };
 const txt = (cx, x, y, str, col, sz = 10, bold = true) => {
   cx.fillStyle = col;
-  cx.font = `${bold ? 'bold ' : ''}${sz}px sans-serif`;
+  cx.font = `400 ${sz}px "${window.FamilyV2.fontFamily}"`;
   cx.textAlign = 'center'; cx.textBaseline = 'middle';
   cx.fillText(str, x, y);
 };

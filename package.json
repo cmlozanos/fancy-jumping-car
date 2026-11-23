@@ -1,1 +1,11 @@
-{"name":"fancy-jumping-car-checks","private":true,"scripts":{"test":"playwright test"},"devDependencies":{"@playwright/test":"1.62.1"}}
+{
+  "name": "fancy-jumping-car-checks",
+  "private": true,
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.62.1"
+  },
+  "version": "2.0.0"
+}

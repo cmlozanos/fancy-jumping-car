@@ -5,6 +5,11 @@ import { CONFIG } from "./constants.js";
 import { getPortraitDataURL, drawCharacterPortrait } from "./portraits.js";
 import { createFixedStepper, readLightMode, LIGHT_PIXEL_RATIO } from './performance.js?v=20260925-4';
 
+await window.FamilyV2.fontReady;
+const soundButton = document.getElementById('sound-toggle');
+const qualityButton = document.getElementById('quality-toggle');
+let familyPaused = false;
+
 const gameTimers = LearningGate.createTimers();
 let educationLocked = true;
 let educationGate;
@@ -94,7 +99,7 @@ const scene = new THREE.Scene();
 scene.background = new THREE.Color(CONFIG.colors.sky);
 
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
-const renderer = new THREE.WebGLRenderer({ antialias: true });
+const renderer = new THREE.WebGLRenderer({ antialias: false });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, lightMode ? LIGHT_PIXEL_RATIO : 1));
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = !lightMode;
@@ -1226,7 +1231,7 @@ function buildCheckpointGate(trackData, t) {
     ctx.fillRect(x, 0, stripeW, canvas.height);
   }
   ctx.fillStyle = "#111111";
-  ctx.font = "bold 28px sans-serif";
+  ctx.font = `400 28px "${window.FamilyV2.fontFamily}"`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillText("CHECK", canvas.width / 2, canvas.height / 2);
@@ -1295,7 +1300,7 @@ function buildFinishGate(trackData) {
   const lCtx = labelCanvas.getContext("2d");
   lCtx.clearRect(0, 0, labelCanvas.width, labelCanvas.height);
   lCtx.fillStyle = "#ffffff";
-  lCtx.font = "bold 48px sans-serif";
+  lCtx.font = `400 48px "${window.FamilyV2.fontFamily}"`;
   lCtx.textAlign = "center";
   lCtx.textBaseline = "middle";
   lCtx.fillText("🏁 FINISH", labelCanvas.width / 2, labelCanvas.height / 2);
@@ -1349,7 +1354,7 @@ function buildStartLine(trackData) {
     ctx.fillRect(x, 0, stripeW, canvas.height);
   }
   ctx.fillStyle = "#ffffff";
-  ctx.font = "bold 32px sans-serif";
+  ctx.font = `400 32px "${window.FamilyV2.fontFamily}"`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillText("START", canvas.width / 2, canvas.height / 2);
@@ -1564,7 +1569,7 @@ function buildTurboPads(trackData, level) {
   pc.fillStyle = "#00ffcc";
   pc.fillRect(0, 0, 256, 256);
   pc.fillStyle = "#003322";
-  pc.font = "bold 60px sans-serif";
+  pc.font = `400 60px "${window.FamilyV2.fontFamily}"`;
   pc.textAlign = "center";
   pc.fillText("TURBO", 128, 55);
   // Three arrows pointing forwards
@@ -1579,7 +1584,7 @@ function buildTurboPads(trackData, level) {
     }
   });
   pc.fillStyle = "#ffff00";
-  pc.font = "bold 24px sans-serif";
+  pc.font = `400 24px "${window.FamilyV2.fontFamily}"`;
   pc.fillText("⚡", 40, 248); pc.fillText("⚡", 128, 248); pc.fillText("⚡", 216, 248);
   const padTex = new THREE.CanvasTexture(padCanvas);
 
@@ -1667,7 +1672,7 @@ function buildTrampolines(trackData, level) {
     mc.beginPath(); mc.moveTo(0, 128); mc.lineTo(256, 128); mc.stroke();
     mc.beginPath(); mc.moveTo(128, 0); mc.lineTo(128, 256); mc.stroke();
     mc.fillStyle = "#ffffff";
-    mc.font = "bold 48px sans-serif"; mc.textAlign = "center"; mc.textBaseline = "middle";
+    mc.font = `400 48px "${window.FamilyV2.fontFamily}"`; mc.textAlign = "center"; mc.textBaseline = "middle";
     mc.fillText("BOING!", 128, 128);
     const rubber = new THREE.Mesh(
       new THREE.BoxGeometry(w - 0.5, 0.12, l - 0.5),
@@ -1709,7 +1714,7 @@ function buildLavaZones(trackData, level) {
     lc.fillStyle = grad; lc.fill();
   });
   // Warning text
-  lc.fillStyle = "#ffff00"; lc.font = "bold 38px sans-serif"; lc.textAlign = "center"; lc.textBaseline = "middle";
+  lc.fillStyle = "#ffff00"; lc.font = `400 38px "${window.FamilyV2.fontFamily}"`; lc.textAlign = "center"; lc.textBaseline = "middle";
   lc.fillText("☠ LAVA ☠", 128, 128);
   const lavaTex = new THREE.CanvasTexture(lavaCanvas);
 
@@ -1783,7 +1788,7 @@ function buildMudZones(trackData, level) {
   mcc.strokeStyle = "#1a0c00"; mcc.lineWidth = 8;
   mcc.beginPath(); mcc.moveTo(80, 0); mcc.lineTo(88, 256); mcc.stroke();
   mcc.beginPath(); mcc.moveTo(168, 0); mcc.lineTo(176, 256); mcc.stroke();
-  mcc.fillStyle = "#8b5c20"; mcc.font = "bold 34px sans-serif"; mcc.textAlign = "center"; mcc.textBaseline = "middle";
+  mcc.fillStyle = "#8b5c20"; mcc.font = `400 34px "${window.FamilyV2.fontFamily}"`; mcc.textAlign = "center"; mcc.textBaseline = "middle";
   mcc.fillText("BARRO", 128, 128);
   const mudTex = new THREE.CanvasTexture(mudCanvas);
 
@@ -2117,9 +2122,7 @@ function updateCamera(center, tangent) {
 
 function updateCheckpoints(center) {
   if (state.checkpointIndex >= state.checkpoints.length) return;
-  const targetT = state.checkpoints[state.checkpointIndex];
-  const target = getTrackPoint(track, targetT);
-  if (center.distanceTo(target) < 5.0) {
+  while (state.checkpointIndex < state.checkpoints.length && state.progress >= state.checkpoints[state.checkpointIndex]) {
     const gate = checkpoints[state.checkpointIndex];
     if (gate?.userData?.bannerMaterial) {
       gate.userData.bannerMaterial.color.set(0x77ff77);
@@ -2143,6 +2146,7 @@ function checkFinish() {
     if (finishNext) {
       finishNext.classList.toggle("hidden", !nextLevel);
     }
+    window.FamilyV2.award("circuit-" + state.levelKey, 3);
     playSound("finish");
   }
 }
@@ -2162,7 +2166,15 @@ function updateHud() {
 }
 
 /* ─── COUNTDOWN (G3) ─── */
+const countdownTimers = [];
+function clearCountdown() {
+  countdownTimers.forEach(id => gameTimers.clear(id));
+  countdownTimers.length = 0;
+  state.countdownActive = false;
+  countdownOverlay.classList.add("hidden");
+}
 function startCountdown(callback) {
+  clearCountdown();
   state.countdownActive = true;
   countdownOverlay.classList.remove("hidden");
   const steps = [
@@ -2172,7 +2184,7 @@ function startCountdown(callback) {
     { text: "GO!", delay: 2400 },
   ];
   steps.forEach(({ text, delay }) => {
-    gameTimers.set(() => {
+    countdownTimers.push(gameTimers.set(() => {
       countdownText.textContent = text;
       countdownText.style.animation = "none";
       void countdownText.offsetWidth;
@@ -2184,13 +2196,13 @@ function startCountdown(callback) {
         countdownText.style.color = "#fff";
         playSound("countdown");
       }
-    }, delay);
+    }, delay));
   });
-  gameTimers.set(() => {
+  countdownTimers.push(gameTimers.set(() => {
     countdownOverlay.classList.add("hidden");
     state.countdownActive = false;
     if (callback) callback();
-  }, 3000);
+  }, 3000));
 }
 
 /* ─── CHARACTER SELECTOR (G4+G5) ─── */
@@ -2209,7 +2221,7 @@ function initPreviewRenderer() {
   const w = canvas.clientWidth  || 400;
   const h = canvas.clientHeight || 225;
 
-  prevRenderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+  prevRenderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: false });
   prevRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, lightMode ? LIGHT_PIXEL_RATIO : 1));
   prevRenderer.setSize(w, h, false);
   prevRenderer.shadowMap.enabled = false;
@@ -2245,14 +2257,14 @@ function initPreviewRenderer() {
 
 function animatePreview() {
   prevAnimId = null;
-  if (educationLocked || document.hidden || vehicleMenu.classList.contains('hidden')) return;
+  if (educationLocked || familyPaused || document.hidden || vehicleMenu.classList.contains('hidden')) return;
   if (prevKartGroup) prevKartGroup.rotation.y += 0.012;
   prevRenderer.render(prevScene, prevCamera);
   prevAnimId = requestAnimationFrame(animatePreview);
 }
 
 function startPreview() {
-  if (prevRenderer && prevAnimId === null && !educationLocked && !document.hidden && !vehicleMenu.classList.contains('hidden')) {
+  if (prevRenderer && prevAnimId === null && !educationLocked && !familyPaused && !document.hidden && !vehicleMenu.classList.contains('hidden')) {
     prevAnimId = requestAnimationFrame(animatePreview);
   }
 }
@@ -2263,7 +2275,7 @@ function stopPreview() {
 }
 
 function syncActivity() {
-  raceBlocked = educationLocked || document.hidden || !titleScreen.classList.contains('hidden') || !vehicleMenu.classList.contains('hidden') || !levelMenu.classList.contains('hidden');
+  raceBlocked = educationLocked || familyPaused || document.hidden || !titleScreen.classList.contains('hidden') || !vehicleMenu.classList.contains('hidden') || !levelMenu.classList.contains('hidden');
   releaseInput();
   fixedSimulation.reset();
   clock.getDelta();
@@ -2275,7 +2287,7 @@ function syncActivity() {
     gameTimers.resume();
     if (audioCtx && soundEnabled) audioCtx.resume().catch(() => {});
   }
-  if (educationLocked || document.hidden || vehicleMenu.classList.contains('hidden')) stopPreview();
+  if (educationLocked || familyPaused || document.hidden || vehicleMenu.classList.contains('hidden')) stopPreview();
   else startPreview();
 }
 
@@ -2294,7 +2306,7 @@ function applyQuality() {
     materials.forEach(material => { material.needsUpdate = true; });
   }
   if (prevRenderer) prevRenderer.setPixelRatio(ratio);
-  const button = document.getElementById('quality-toggle');
+  const button = qualityButton;
   button.setAttribute('aria-pressed', String(lightMode));
   button.setAttribute('aria-label', lightMode ? 'Modo ligero activado. Cambiar a calidad normal' : 'Activar modo ligero');
   button.title = lightMode ? 'Modo ligero' : 'Calidad normal';
@@ -2666,6 +2678,8 @@ function onResize() {
 }
 
 function resetRun() {
+  clearCountdown();
+  releaseInput();
   state.time = 0;
   state.speed = 0;
   state.lateral = 0;
@@ -2790,9 +2804,9 @@ educationGate = LearningGate.mount({
     syncActivity();
   }
 });
-document.getElementById('sound-toggle').addEventListener('click', () => {
+soundButton.addEventListener('click', () => {
   soundEnabled = !soundEnabled;
-  const button = document.getElementById('sound-toggle');
+  const button = soundButton;
   button.textContent = soundEnabled ? '🔊' : '🔇';
   button.setAttribute('aria-pressed', String(soundEnabled));
   button.setAttribute('aria-label', soundEnabled ? 'Desactivar sonido' : 'Activar sonido');
@@ -2802,10 +2816,23 @@ document.getElementById('sound-toggle').addEventListener('click', () => {
   }
   else if (audioCtx) audioCtx.suspend().catch(() => {});
 });
-document.getElementById('quality-toggle').addEventListener('click', () => {
+qualityButton.addEventListener('click', () => {
   lightMode = !lightMode;
   try { window.localStorage.setItem('fancy-light-mode', String(lightMode)); } catch (_) {}
   applyQuality();
 });
 applyQuality();
 requestAnimationFrame(animate);
+
+window.FamilyV2.register({
+  home() {
+    vehicleMenu.classList.add('hidden');
+    levelMenu.classList.add('hidden');
+    clearCountdown();
+    resetRun();
+    showTitleScreen();
+  },
+  pause() { familyPaused = true; syncActivity(); },
+  resume() { familyPaused = false; syncActivity(); }
+});
+window.addEventListener('keydown', () => window.FamilyV2.touch(), { passive: true });

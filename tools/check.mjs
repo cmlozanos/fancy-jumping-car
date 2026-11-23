@@ -34,3 +34,17 @@ for(const interruption of ['blur','visibilitychange','pointercancel']){
   assert.equal(classes.size,0,interruption+' must remove the pressed-button visual');
 }
 console.log('Super Kart: production keyboard/touch handlers release state and visuals on blur, hidden document and pointer cancellation');
+
+const familyFiles = (await import('node:fs')).readdirSync('family-v2').sort();
+assert.deepEqual(familyFiles,['OFL.txt','family.css','family.js','playwrite-es.ttf']);
+assert.match(readFileSync('index.html','utf8'), /defer src="family-v2\/family.js\?v=2.0.0" data-game="fancy-jumping-car"/);
+
+// A fast step may cross more than the former 5 m checkpoint window.
+const checkpointContext=vm.createContext({state:{checkpointIndex:0,checkpoints:[.25,.5,.75],progress:.99},checkpoints:[{},{},{}],hudCheckpoint:{textContent:''}});
+vm.runInContext(source.slice(source.indexOf('function updateCheckpoints('),source.indexOf('function checkFinish()')),checkpointContext);
+checkpointContext.updateCheckpoints({});assert.equal(checkpointContext.state.checkpointIndex,3);
+let cancelledTimers=[];
+const countdownContext=vm.createContext({state:{countdownActive:true},countdownOverlay:{classList:{add(){}}},gameTimers:{clear:id=>cancelledTimers.push(id)}});
+vm.runInContext(source.slice(source.indexOf('const countdownTimers ='),source.indexOf('function startCountdown('))+'countdownTimers.push(1,2,3);clearCountdown();',countdownContext);
+assert.deepEqual(cancelledTimers,[1,2,3]);assert.equal(countdownContext.state.countdownActive,false);
+console.log('Mechanics: skipped checkpoint windows are credited; restart clears every previous countdown timer.');

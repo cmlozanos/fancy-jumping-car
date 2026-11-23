@@ -44,3 +44,5 @@ venv:
 install:
 	$(PIP) install --upgrade pip
 	$(PIP) install -r requirements.txt
+
+# tools/family-check.cjs is exercised by make test (pause, points, fonts and adult settings).

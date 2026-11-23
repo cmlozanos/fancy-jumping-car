@@ -1,3 +1,4 @@
+const {setting,familyPause}=require('../tools/family-check.cjs');
 const {test,expect}=require('@playwright/test');
 const {solveGate}=require('./helpers/learning-fixture.cjs');
 const {checkTouchUI}=require('../tools/touch-check.cjs');
@@ -7,7 +8,7 @@ test('touch start, countdown freeze, home, sound off and offline gate',async({pa
  await solveGate(page);await expect(page.locator('#sound-toggle')).toHaveAttribute('aria-pressed','false');
  await checkTouchUI(page, '#title-play', true);
  await expect(page.locator('#quality-toggle')).toHaveAttribute('aria-pressed','true');
- await expect(page.locator('.game-exit a')).toHaveAttribute('href','https://cmlozanos.github.io/games/');
+ await expect(page.locator('family-v2-shell #home')).toHaveAttribute('aria-label','Inicio del juego');
  await page.locator('#title-play').click();
  await page.evaluate(()=>{const now=Date.now;Date.now=()=>now()+600001;});
  await expect(page.locator('#learning-gate')).toBeVisible();

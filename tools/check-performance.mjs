@@ -46,7 +46,7 @@ function panel(hidden){return {hidden,classList:{contains(){return this.owner.hi
 const panels=['titleScreen','vehicleMenu','levelMenu'].map(()=>panel(true));
 panels.forEach(p=>p.classList.owner=p);
 let mainRenders=0,previewRenders=0,advance=0,queued=0,cancelled=0,paused=false,released=0;
-const lifecycle=vm.createContext({educationLocked:false,document:{hidden:false},titleScreen:panels[0],vehicleMenu:panels[1],levelMenu:panels[2],raceBlocked:false,
+const lifecycle=vm.createContext({familyPaused:false,educationLocked:false,document:{hidden:false},titleScreen:panels[0],vehicleMenu:panels[1],levelMenu:panels[2],raceBlocked:false,
   releaseInput(){released++;},fixedSimulation:{reset(){},advance(){advance++;}},clock:{getDelta:()=>1/60},lastHudUpdate:0,
   gameTimers:{pause(){paused=true;},resume(){paused=false;}},audioCtx:null,
   prevRenderer:{render(){previewRenders++;}},prevKartGroup:{rotation:{y:0}},prevScene:{},prevCamera:{},prevAnimId:null,
@@ -81,7 +81,7 @@ assert.ok(writes<=30,`HUD writes ${writes} must be capped at ten batches/second`
 console.log('Star: 60 frames -> one traversal, zero shader version updates; colors restored without rebuilding car. HUD:',writes,'text writes vs previous 180 per second.');
 
 const qualityMaterial=new THREE.MeshStandardMaterial();
-const quality=vm.createContext({window:{devicePixelRatio:2},lightMode:true,LIGHT_PIXEL_RATIO,renderer:{setPixelRatio(value){this.ratio=value;},shadowMap:{enabled:true}},prevRenderer:null,scene:{traverse(fn){fn({material:qualityMaterial});fn({material:qualityMaterial});}},document:{getElementById:()=>({setAttribute(){}})}});
+const quality=vm.createContext({qualityButton:{setAttribute(){}},window:{devicePixelRatio:2},lightMode:true,LIGHT_PIXEL_RATIO,renderer:{setPixelRatio(value){this.ratio=value;},shadowMap:{enabled:true}},prevRenderer:null,scene:{traverse(fn){fn({material:qualityMaterial});fn({material:qualityMaterial});}},document:{getElementById:()=>({setAttribute(){}})}});
 vm.runInContext(section('function applyQuality()','function updatePreviewKart('),quality);
 quality.applyQuality();assert.equal(qualityMaterial.version,1);assert.equal(quality.renderer.ratio,0.65);assert.equal(quality.renderer.shadowMap.enabled,false);
 quality.applyQuality();assert.equal(qualityMaterial.version,1,'reapplying quality must not dirty shaders again');

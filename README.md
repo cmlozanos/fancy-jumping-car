@@ -9,7 +9,7 @@ Static game, with local Three.js r160 and MIT license in `vendor/`. WebGL is
 required; pixel ratio is capped at one for older tablets. Existing cars, tracks
 and track layouts are unchanged. The educational challenge appears on entry and every
 ten minutes; physics, countdowns, input and audio pause while solving it.
-Sound starts off. The home icon opens the games-only catalogue.
+Sound starts off. Home returns to this game’s menu; the catalogue is available to adults.
 
 PWA resources are cached only inside this game's scope, including the challenge.
 Run `make install-tests`, `make icons`, `make check` and `make test`.
@@ -41,3 +41,37 @@ frame counts are desktop observations, not a physical Android performance claim.
 Game UI now suppresses WebKit callouts and explicitly restores selection/editing CSS for editable fields. The existing global context-menu handler and gesture policy are unchanged, including their pre-existing desktop/form context-menu suppression.
 
 `make test` includes `tools/touch-check.cjs`, keyboard editing and an 800 ms native-emulated control hold/release. `CHROME95_PATH` selects an installed legacy browser. Physical-tablet native menu behavior still needs device validation.
+
+## Family 2.0.0
+
+The local `family-v2/` copy contains exactly the CSS, classic JavaScript,
+Playwrite ES font and OFL license. Its measured viewport height drives the game
+layout. DOM text and game-owned canvas labels use the loaded local font; no
+canvas API is patched. The header owns Home, points and Adult settings. Native
+sound/quality buttons are moved intact into the adult slot, preserving handlers.
+Sound starts OFF on every load without deleting existing preferences/progress.
+Light rendering remains the default; explicit graphics preferences survive.
+Antialiasing is disabled at context creation and physics remain fixed-step.
+The pause adapter freezes actual simulation, pending game timers and audio;
+closing Adult settings cannot bypass the independent educational lock.
+Home stops the current game and opens its own menu without changing the URL.
+The service worker uses a game-scoped 2.0.0 cache including all four kit files.
+
+### Gameplay fixes and evidence
+
+Checkpoint gates now count crossings by track progress rather than a 5 m point
+proximity that could be skipped at speed. Restart/menu clear pending countdowns
+and held controls, preventing an old countdown from ending a newer one early.
+All characters and circuits remain selectable.
+
+Validation: `make check` passes real physics/lifecycle/HUD/cache guards.
+`npm test` passes both Chromium browser tests: touch hold/release, countdown
+freeze, offline startup, Adult pause/resume, points deduplication, font readiness,
+normal/light quality, and Home staying on the same URL. The full-race scenario
+executes the production simulation to progress 1 and 3/3 checkpoints (observed
+1,214 fixed steps with the generated track), then uses the real Restart button.
+This accelerated scenario applies steering/acceleration inputs; it does not
+teleport the car or force finish state. Layout checks cover 360×640, 640×360 and
+1024×768; the generated landscape race image was visually inspected.
+Desktop render observations are not Android GPU certification. Existing Node
+module-type warnings are non-fatal and no dependencies were changed.

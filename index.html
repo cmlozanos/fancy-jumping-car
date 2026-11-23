@@ -7,10 +7,13 @@
     <link rel="manifest" href="manifest.webmanifest" />
     <meta name="theme-color" content="#18293e" />
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏎️</text></svg>" />
-    <link rel="stylesheet" href="styles.css?v=20260928-1" />
-  </head>
+    <link rel="stylesheet" href="styles.css?v=2.0.0" />
+      <link rel="stylesheet" href="family-v2/family.css?v=2.0.0">
+    <script defer src="family-v2/family.js?v=2.0.0" data-game="fancy-jumping-car"></script>
+</head>
   <body>
-    <nav class="game-exit" aria-label="Juegos, sonido y rendimiento"><a href="https://cmlozanos.github.io/games/" aria-label="Todos los juegos">⌂</a><button id="sound-toggle" aria-label="Activar sonido" aria-pressed="false">🔇</button><button id="quality-toggle" aria-label="Activar modo ligero" aria-pressed="false" title="Calidad normal">⚡</button></nav>
+    <header data-family-slot aria-label="Familia"></header>
+    <nav class="game-exit" aria-label="Juegos, sonido y rendimiento"><a data-family-home href="https://cmlozanos.github.io/games/" aria-label="Todos los juegos">⌂</a><button data-family-setting id="sound-toggle" aria-label="Activar sonido" aria-pressed="false">🔇</button><button data-family-setting id="quality-toggle" aria-label="Activar modo ligero" aria-pressed="false" title="Calidad normal">⚡</button></nav>
     <!-- ── TITLE / SPLASH SCREEN ── -->
     <div id="title-screen">
       <div class="title-rainbow">🏁</div>
@@ -115,7 +118,7 @@
         }
       }
     </script>
-    <script type="module" src="src/main.js?v=20260925-4"></script>
+    <script type="module" src="src/main.js?v=2.0.0"></script>
     <script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(function () {});</script>
   </body>
 </html>
