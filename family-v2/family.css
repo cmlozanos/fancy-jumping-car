@@ -12,3 +12,5 @@ html.family-no-motion *,html.family-no-motion *::before,html.family-no-motion *:
 html.family-v2 .family-theme-surface{background:var(--family-panel);color:var(--family-ink)}
 html.family-v2 [data-family-setting] { font-family:var(--family-font)!important; }
 html.family-v2[data-family-theme=light] .family-native-panel { background:var(--family-panel);color:var(--family-ink); }
+/* Shared educational overlays must not fall back to a different school hand. */
+html.family-v2 #learning-gate,html.family-v2 #learning-gate button,html.family-v2 #learning-gate input{font-family:var(--family-font)!important;font-synthesis:none}

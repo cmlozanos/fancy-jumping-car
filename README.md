@@ -75,3 +75,22 @@ teleport the car or force finish state. Layout checks cover 360×640, 640×360 a
 1024×768; the generated landscape race image was visually inspected.
 Desktop render observations are not Android GPU certification. Existing Node
 module-type warnings are non-fatal and no dependencies were changed.
+
+## Shared-shell final fixes — 2026-11-23
+
+- Shared kit matches the canonical `home/family-v2/` byte for byte: educational
+  expiry closes Adult settings, shell keyboard events stay isolated, cookie
+  fallback remains authoritative after failed storage writes, real keyboard/held
+  pointer activity extends the session without disabling inactivity expiry, and
+  educational overlays use the shared font. Game-scoped cache revision: `-shell2`.
+- Delivery checks: `node --check family-v2/family.js`, `node --check sw.js` and
+  `make check` passed. No gameplay source changed; no build regeneration needed.
+- Reused coordinator evidence in `home/docs/v2/evidence/fancy95.txt`: genuine
+  Chromium 95.0.4630.0 native game checks, after native fixes and before these
+  final shell fixes. Final standalone shell regressions: `shell-regressions95.txt`
+  (5/5 Chromium 95) and `shell-regressions.txt` (10/10 modern Chromium/WebKit),
+  in the same evidence directory. These are reused results, not new full-game
+  browser runs against the final combination or physical Android certification.
+  `home/docs/v2/CONTRACT.md` and `MATRIX.md` record the coordinated scope; all
+  `home/` paths here are evidence references only, never runtime dependencies.
+- No tags or GitHub Releases: coordinated separately.
