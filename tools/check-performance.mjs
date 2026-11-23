@@ -46,7 +46,7 @@ function panel(hidden){return {hidden,classList:{contains(){return this.owner.hi
 const panels=['titleScreen','vehicleMenu','levelMenu'].map(()=>panel(true));
 panels.forEach(p=>p.classList.owner=p);
 let mainRenders=0,previewRenders=0,advance=0,queued=0,cancelled=0,paused=false,released=0;
-const lifecycle=vm.createContext({familyPaused:false,educationLocked:false,document:{hidden:false},titleScreen:panels[0],vehicleMenu:panels[1],levelMenu:panels[2],raceBlocked:false,
+const lifecycle=vm.createContext({nativeMotion:()=>true,syncNativeAppearance(){},particleMesh:{visible:true},turboGlow:{visible:true},familyPaused:false,educationLocked:false,document:{hidden:false},titleScreen:panels[0],vehicleMenu:panels[1],levelMenu:panels[2],raceBlocked:false,
   releaseInput(){released++;},fixedSimulation:{reset(){},advance(){advance++;}},clock:{getDelta:()=>1/60},lastHudUpdate:0,
   gameTimers:{pause(){paused=true;},resume(){paused=false;}},audioCtx:null,
   prevRenderer:{render(){previewRenders++;}},prevKartGroup:{rotation:{y:0}},prevScene:{},prevCamera:{},prevAnimId:null,
@@ -87,3 +87,26 @@ quality.applyQuality();assert.equal(qualityMaterial.version,1);assert.equal(qual
 quality.applyQuality();assert.equal(qualityMaterial.version,1,'reapplying quality must not dirty shaders again');
 quality.lightMode=false;quality.applyQuality();assert.equal(qualityMaterial.version,2);assert.equal(quality.renderer.ratio,1);assert.equal(quality.renderer.shadowMap.enabled,true);
 console.log('Quality toggle: shadow shaders refresh once per change, shared materials once; normal settings restored.');
+
+const appearance = vm.createContext({THREE,window:{FamilyV2:{motionAllowed:()=>false,theme:()=> 'dark'}},state:{levelKey:'test'},CONFIG,
+  getLevelConfig:()=>({skyColor:0x87ceeb,groundColor:0x447744}),
+  scene:{background:new THREE.Color()},sky:{material:{color:new THREE.Color()}},
+  ground:{material:{color:new THREE.Color()}},ridges:{material:{color:new THREE.Color()}},ambient:new THREE.AmbientLight(),dirLight:new THREE.DirectionalLight()});
+vm.runInContext(section('function nativeMotion()',"window.addEventListener('familyv2:appearance'")+ ';syncNativeAppearance();',appearance);
+assert.equal(appearance.scene.background.getHex(),0x14273e);
+assert.equal(vm.runInContext('nativeMotion()',appearance),false);
+const geometry = vm.createContext({THREE});
+vm.runInContext(section('function buildRampGeometry(', 'function buildTrees('),geometry);
+const ramp = geometry.buildRampGeometry(6,8,12,3);
+assert.equal(ramp.getAttribute('uv').count,ramp.getAttribute('position').count);
+assert.equal(ramp.getAttribute('position').getY(6),3,'visual ramp height unchanged');
+assert.equal(ramp.getAttribute('uv').getY(6),1,'chevrons reach takeoff lip');
+console.log('Native appearance: night rig, no-motion getter and ramp UV/physical silhouette verified.');
+
+// The previous strip wound clockwise from above: only the edge rails rendered.
+const trackContext=vm.createContext({THREE,CONFIG,getTrackTangent:()=>new THREE.Vector3(0,0,1),buildTrackTail:()=>({mesh:null,leftEdge:null,rightEdge:null})});
+vm.runInContext(section('function buildTrack(', 'function buildCar('),trackContext);
+const renderedTrack=trackContext.buildTrack(null,CONFIG.levels[0]);
+const normals=renderedTrack.mesh.geometry.getAttribute('normal');
+for(let i=0;i<normals.count;i++)assert.ok(normals.getY(i)>0.99,'asphalt faces the camera above, not underground');
+console.log('Native track regression: every asphalt normal faces up; vertex positions and physics unchanged.');

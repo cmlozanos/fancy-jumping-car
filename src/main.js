@@ -129,12 +129,27 @@ scene.add(sky);
 
 const ground = new THREE.Mesh(
   new THREE.PlaneGeometry(4000, 4000),
-  new THREE.MeshStandardMaterial({ color: CONFIG.colors.ground })
+  new THREE.MeshStandardMaterial({ color: CONFIG.colors.ground, map: groundTexture(), roughness:1 })
 );
 ground.rotation.x = -Math.PI / 2;
 ground.position.y = -0.5;
 ground.receiveShadow = true;
 scene.add(ground);
+
+// Distant landforms share one geometry/material and never join collision lists.
+const ridges = new THREE.InstancedMesh(
+  new THREE.ConeGeometry(1, 1, 7),
+  new THREE.MeshLambertMaterial({ color: 0x668d8c }), 18
+);
+const ridgeTransform = new THREE.Object3D();
+for (let i=0;i<18;i++) {
+  const angle=i*Math.PI*2/18;
+  ridgeTransform.position.set(Math.cos(angle)*780, -10, Math.sin(angle)*780);
+  ridgeTransform.scale.set(100+(i%4)*28, 70+(i%5)*18, 100);
+  ridgeTransform.rotation.y=angle; ridgeTransform.updateMatrix();
+  ridges.setMatrixAt(i,ridgeTransform.matrix);
+}
+scene.add(ridges);
 
 const trackTexture = createTrackTexture();
 let track;
@@ -167,6 +182,11 @@ car.userData = {
 car.position.y = CONFIG.car.baseY;
 car.castShadow = true;
 scene.add(car);
+// Cheap landing-plane contact cue remains available with shadow maps disabled.
+const contactShadow = new THREE.Mesh(new THREE.CircleGeometry(1,16),new THREE.MeshBasicMaterial({color:0x17212d,transparent:true,opacity:0.24,depthWrite:false}));
+contactShadow.rotation.x = -Math.PI/2;
+contactShadow.scale.set(1.8,2.6,1);
+scene.add(contactShadow);
 // Color per-character is baked into buildCar — color picker is disabled
 if (carColorInput) carColorInput.closest('label')?.style && (carColorInput.closest('label').style.display = 'none');
 
@@ -227,6 +247,7 @@ scene.add(particleMesh);
 
 const particles = [];
 function spawnParticle(x, y, z, vx, vy, vz, r, g, b, life) {
+  if (!nativeMotion()) return;
   particles.push({ x, y, z, vx, vy, vz, r, g, b, life, maxLife: life });
 }
 function updateParticles(dt) {
@@ -429,7 +450,7 @@ function disposeObject3D(obj) {
     if (child.material) {
       const mats = Array.isArray(child.material) ? child.material : [child.material];
       mats.forEach((m) => {
-        if (m.map) m.map.dispose();
+        if (m.map && m.map !== rampTexture) m.map.dispose();
         if (m.emissiveMap) m.emissiveMap.dispose();
         if (m.normalMap) m.normalMap.dispose();
         m.dispose();
@@ -590,8 +611,8 @@ function buildTrack(texture, level) {
 
     if (i < segments) {
       const idx = i * 2;
-      indices.push(idx, idx + 1, idx + 2);
-      indices.push(idx + 1, idx + 3, idx + 2);
+      indices.push(idx, idx + 2, idx + 1);
+      indices.push(idx + 1, idx + 2, idx + 3);
 
       const edgeIdx = i * 2;
       leftStripIndices.push(edgeIdx, edgeIdx + 1, edgeIdx + 2);
@@ -608,10 +629,10 @@ function buildTrack(texture, level) {
   geometry.computeVertexNormals();
 
   const material = new THREE.MeshStandardMaterial({
-    color: CONFIG.colors.track,
+    color: 0xffffff,
     map: texture,
     emissive: CONFIG.colors.trackEmissive,
-    emissiveIntensity: 1.1,
+    emissiveIntensity: 0.12,
     roughness: 0.9,
     metalness: 0.05,
   });
@@ -997,7 +1018,13 @@ function buildCar(vehicleType, color) {
     group.scale.setScalar(0.84);
   }
 
-  group.traverse((c) => { if (c.isMesh) { c.castShadow = true; c.receiveShadow = false; } });
+  group.traverse((c) => { if (c.isMesh) {
+    c.castShadow = true; c.receiveShadow = false;
+    if (c.material.isMeshStandardMaterial) {
+      c.material.roughness = c.material === chromeMat ? 0.27 : 0.48;
+      c.material.metalness = c.material === chromeMat ? 0.65 : 0.18;
+    }
+  } });
   // Return EMPTY bodyMaterials — character kart colors are baked in and must not be overridden
   return { root: group, wheels, wheelRadius, bodyMaterials: [] };
 }
@@ -1148,6 +1175,17 @@ function buildTrackTail(endPoint, tangent, halfWidth, tailLength, roadMaterial, 
   return { mesh: tailGroup, leftEdge: null, rightEdge: null };
 }
 
+function groundTexture() {
+  const canvas = document.createElement('canvas'); canvas.width=128;canvas.height=128;
+  const ctx=canvas.getContext('2d');ctx.fillStyle='#e3dfc2';ctx.fillRect(0,0,128,128);
+  for(let i=0;i<220;i++) {
+    ctx.fillStyle=i%3 ? '#b8bc94' : '#f0e8c8';
+    ctx.fillRect((i*47)%128,(i*79)%128,1,2+i%3);
+  }
+  const texture=new THREE.CanvasTexture(canvas);texture.wrapS=texture.wrapT=THREE.RepeatWrapping;texture.repeat.set(500,500);
+  return texture;
+}
+
 function createTrackTexture() {
   const canvas = document.createElement("canvas");
   canvas.width = 256;
@@ -1184,6 +1222,28 @@ function createTrackTexture() {
   return texture;
 }
 
+// Geometry and materials only: no extra lights, shadows, postprocessing or physics.
+function nativeMotion() { return window.FamilyV2?.motionAllowed?.() ?? !window.matchMedia('(prefers-reduced-motion: reduce)').matches; }
+let appearanceKey = '';
+function syncNativeAppearance() {
+  const dark = (window.FamilyV2?.theme?.() ?? (window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')) === 'dark';
+  const key = state.levelKey + ':' + dark;
+  if (key === appearanceKey) return;
+  appearanceKey = key;
+  const level = getLevelConfig(state.levelKey);
+  const skyColor = dark ? 0x14273e : (level?.skyColor ?? CONFIG.colors.sky);
+  scene.background.set(skyColor);
+  sky.material.color.set(skyColor);
+  scene.fog = new THREE.Fog(skyColor, 350, 1100);
+  ambient.color.set(dark ? 0x9fbad5 : 0xfff2dc);
+  ambient.intensity = dark ? 0.95 : 0.65;
+  dirLight.color.set(dark ? 0x9bbfff : 0xffecc7);
+  dirLight.intensity = dark ? 0.65 : 1.15;
+  ridges.material.color.set(dark ? 0x294352 : 0x668d8c);
+  ground.material.color.set(dark ? 0x25433b : (level?.groundColor ?? CONFIG.colors.ground));
+}
+window.addEventListener('familyv2:appearance', () => { appearanceKey = ''; syncNativeAppearance(); });
+
 function applyLevel(levelKey) {
   const level = getLevelConfig(levelKey);
   if (!level) return;
@@ -1203,6 +1263,7 @@ function applyLevel(levelKey) {
   }
   updateLevelMenuState();
   initLevel(level.key);
+  appearanceKey = ''; syncNativeAppearance();
 }
 
 function buildCheckpoints(trackData) {
@@ -1441,12 +1502,26 @@ function buildObstacleLayout(level) {
   return result;
 }
 
+function rampSurface() {
+  const canvas = document.createElement('canvas'); canvas.width = 128; canvas.height = 128;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#334a5b'; ctx.fillRect(0,0,128,128);
+  ctx.fillStyle = '#f8db76'; ctx.fillRect(0,0,8,128); ctx.fillRect(120,0,8,128);
+  ctx.strokeStyle = '#fff0ab'; ctx.lineWidth = 10;
+  for (let y=18;y<128;y+=38) {
+    ctx.beginPath(); ctx.moveTo(22,y+14); ctx.lineTo(64,y-5); ctx.lineTo(106,y+14); ctx.stroke();
+  }
+  const texture = new THREE.CanvasTexture(canvas); texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
+}
+const rampTexture = rampSurface();
+
 function buildRamps(trackData, obstaclesList) {
   const rampFrontWidth = CONFIG.ramps.frontWidth;
   const rampBackWidth = CONFIG.ramps.backWidth;
   const rampLength = CONFIG.ramps.length;
   const rampHeight = CONFIG.ramps.height;
-  const material = new THREE.MeshStandardMaterial({ color: CONFIG.colors.ramp, roughness: 0.95 });
+  const material = new THREE.MeshStandardMaterial({ map: rampTexture, color: 0xffffff, roughness: 0.82, metalness: 0.15 });
 
   return obstaclesList
     .filter((obstacle) => obstacle.ramp)
@@ -1506,8 +1581,11 @@ function buildRampGeometry(frontWidth, backWidth, length, height) {
     3, 7, 4, 3, 4, 0,
   ];
 
+  // UVs follow the incline, making direction and take-off edge legible.
+  const uvs = new Float32Array([0,0, 1,0, 1,1, 0,1, 0,0, 1,0, 1,1, 0,1]);
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute("position", new THREE.BufferAttribute(vertices, 3));
+  geometry.setAttribute("uv", new THREE.BufferAttribute(uvs, 2));
   geometry.setIndex(indices);
   geometry.computeVertexNormals();
   return geometry;
@@ -1533,11 +1611,13 @@ function buildTrees(trackData, level) {
 
     const group = new THREE.Group();
     const placeholder = new THREE.Mesh(
-      new THREE.CylinderGeometry(1.2, 1.6, height, 8),
-      new THREE.MeshStandardMaterial({ color: 0x2a5a2a })
+      new THREE.CylinderGeometry(0.35, 0.55, height, 7),
+      new THREE.MeshStandardMaterial({ color: 0x74513c, roughness: 1 })
     );
     placeholder.position.y = height * 0.5;
     group.add(placeholder);
+    const crown = new THREE.Mesh(new THREE.IcosahedronGeometry(height*0.43, 1), new THREE.MeshStandardMaterial({color:0x428465, roughness:1}));
+    crown.position.y = height*0.85; placeholder.add(crown); crown.position.y -= height*0.5;
     group.position.copy(center).addScaledVector(left, lateral);
 
     const lateralHalf = width * 0.5;
@@ -1890,6 +1970,7 @@ function animateCollectible(delta) {
     return;
   }
   const elapsed = clock.elapsedTime;
+  if (!nativeMotion()) return;
   collectible.mesh.rotation.y += CONFIG.collectible.rotateSpeed * delta;
   collectible.mesh.position.y =
     (collectible.mesh.userData.baseY ?? CONFIG.collectible.height) + Math.sin(elapsed * 2.8) * 0.5;
@@ -1968,6 +2049,7 @@ function animateStarItems(delta) {
       star.mesh.visible = false;
       return;
     }
+    if (!nativeMotion()) return;
     star.mesh.rotation.y += CONFIG.star.rotateSpeed * delta;
     star.mesh.position.y = (star.mesh.userData.baseY ?? CONFIG.star.height) + Math.sin(elapsed * 3.0) * 0.6;
   });
@@ -1979,7 +2061,7 @@ function buildGrayRamps(trackData, level) {
 
   const cfg = CONFIG.grayRamps;
   const material = new THREE.MeshStandardMaterial({
-    color: cfg.color,
+    map: rampTexture, color: 0xffffff,
     roughness: 0.6,
     metalness: 0.4,
   });
@@ -2258,7 +2340,7 @@ function initPreviewRenderer() {
 function animatePreview() {
   prevAnimId = null;
   if (educationLocked || familyPaused || document.hidden || vehicleMenu.classList.contains('hidden')) return;
-  if (prevKartGroup) prevKartGroup.rotation.y += 0.012;
+  if (prevKartGroup && nativeMotion()) prevKartGroup.rotation.y += 0.012;
   prevRenderer.render(prevScene, prevCamera);
   prevAnimId = requestAnimationFrame(animatePreview);
 }
@@ -2453,6 +2535,7 @@ function spawnCollectibleBurst(pos) {
 
 /* ─── DUST / TURBO PARTICLES ─── */
 function spawnDustParticles(center, count, r, g, b) {
+  if (!nativeMotion()) return;
   for (let i = 0; i < count; i++) {
     spawnParticle(
       center.x + (Math.random() - 0.5) * 2,
@@ -2480,6 +2563,8 @@ function simulate(delta) {
     world,
   });
   updateCamera(center, tangent);
+  contactShadow.position.set(car.position.x, CONFIG.track.trackYOffset + 0.015, car.position.z);
+  contactShadow.material.opacity = Math.max(0.07,0.24-state.jumpY*0.018);
   // Shadow light follows car
   dirLight.position.set(center.x + 30, 60, center.z - 40);
   dirLight.target.position.copy(center);
@@ -2591,7 +2676,10 @@ function animate() {
   if (raceBlocked || document.hidden) return;
   if (state.countdownActive) fixedSimulation.reset();
   else fixedSimulation.advance(delta);
+  syncNativeAppearance();
   updateStarAppearance();
+  particleMesh.visible = nativeMotion();
+  turboGlow.visible = nativeMotion();
   uploadParticles();
   updateEngineSound(state.speed);
   updateHud();

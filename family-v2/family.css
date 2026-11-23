@@ -1,7 +1,7 @@
 @font-face{font-family:'Family School';src:url('./playwrite-es.ttf') format('truetype');font-weight:100 400;font-style:normal;font-display:swap}
 html.family-v2{--family-font:'Family School',cursive;--family-page:#f3f6fc;--family-ink:#233e61;--family-panel:#fff;--family-button:#e5ecff;color-scheme:light}
 html.family-v2[data-family-theme=dark]{--family-page:#141e30;--family-ink:#e7edf7;--family-panel:#202e44;--family-button:#30415f;color-scheme:dark}
-html.family-v2 body,html.family-v2 button,html.family-v2 input,html.family-v2 select,html.family-v2 textarea,html.family-v2 h1,html.family-v2 h2,html.family-v2 h3,html.family-v2 p,html.family-v2 span,html.family-v2 label,html.family-v2 a,html.family-v2 strong,html.family-v2 small,html.family-v2 div{font-family:var(--family-font);font-synthesis:none}
+html.family-v2 body,html.family-v2 button,html.family-v2 input,html.family-v2 select,html.family-v2 textarea,html.family-v2 h1,html.family-v2 h2,html.family-v2 h3,html.family-v2 p,html.family-v2 span,html.family-v2 label,html.family-v2 a,html.family-v2 strong,html.family-v2 small,html.family-v2 div,html.family-v2 output,html.family-v2 b,html.family-v2 em,html.family-v2 summary,html.family-v2 legend{font-family:var(--family-font)!important;font-synthesis:none}
 html.family-v2 button,html.family-v2 input,html.family-v2 select{font-weight:400}
 html.family-v2 [hidden]{display:none!important}
 html.family-v2 .family-syllabic{white-space:nowrap;background-size:100% 1px;background-position:left calc(100% - .1em);background-repeat:no-repeat}
@@ -11,6 +11,6 @@ html.family-no-motion *,html.family-no-motion *::before,html.family-no-motion *:
 /* Theme tokens are available to native game styles; canvas art keeps its own palette. */
 html.family-v2 .family-theme-surface{background:var(--family-panel);color:var(--family-ink)}
 html.family-v2 [data-family-setting] { font-family:var(--family-font)!important; }
-html.family-v2[data-family-theme=light] .family-native-panel { background:var(--family-panel);color:var(--family-ink); }
+html.family-v2 .family-native-panel { background:var(--family-panel);color:var(--family-ink); }
 /* Shared educational overlays must not fall back to a different school hand. */
 html.family-v2 #learning-gate,html.family-v2 #learning-gate button,html.family-v2 #learning-gate input{font-family:var(--family-font)!important;font-synthesis:none}

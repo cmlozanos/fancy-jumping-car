@@ -1,0 +1,6 @@
+playwright.config.cjs
+src/main.js
+styles.css
+tests/performance.spec.cjs
+tools/check-performance.mjs
+docs/refinement/

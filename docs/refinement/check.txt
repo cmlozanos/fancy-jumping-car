@@ -1,0 +1,20 @@
+node tools/sync-learning-gate.mjs --check
+.: verified profile, gate, 100 words/images and local offline loading (935825 image bytes)
+node --check src/main.js
+node --check learning-gate.js
+node --check sw.js
+node tools/check.mjs
+Super Kart: local assets and cache isolation verified
+Super Kart: production keyboard/touch handlers release state and visuals on blur, hidden document and pointer cancellation
+Mechanics: skipped checkpoint windows are credited; restart clears every previous countdown timer.
+node tools/check-performance.mjs
+(node:51038) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/carlos.lozanosoto/personal/repositories/fancy-jumping-car/vendor/three.module.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/carlos.lozanosoto/personal/repositories/fancy-jumping-car/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+Physics: exact original 60 Hz results at 10/15/30/60 FPS; ramp peak 5.113 m; collisions exercised. Light mode raster area: 42.25% of normal.
+Production lifecycle: zero main renders/physics under title, selectors, hidden document or challenge; preview RAF cancelled on close.
+Star: 60 frames -> one traversal, zero shader version updates; colors restored without rebuilding car. HUD: 30 text writes vs previous 180 per second.
+Quality toggle: shadow shaders refresh once per change, shared materials once; normal settings restored.
+Native appearance: night rig, no-motion getter and ramp UV/physical silhouette verified.
+Native track regression: every asphalt normal faces up; vertex positions and physics unchanged.

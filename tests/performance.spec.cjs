@@ -10,7 +10,7 @@ test('hidden work stops; racing, selectors and optional light quality remain usa
     const source=readFileSync('src/main.js','utf8')
       .replaceAll('renderer.render(scene, camera);','window.__perf.main++; renderer.render(scene, camera);')
       .replace('prevRenderer.render(prevScene, prevCamera);','window.__perf.preview++; prevRenderer.render(prevScene, prevCamera);');
-    return route.fulfill({contentType:'text/javascript',body:'window.__perf={main:0,preview:0};\n'+source+`\nwindow.__driveRace=()=>{input.action=true;let ticks=0;for(;ticks<12000&&!state.finished;ticks++){input.left=state.lateral>0.5;input.right=state.lateral< -0.5;simulate(1/60);}releaseInput();return {ticks,progress:state.progress,finished:state.finished,checkpoints:state.checkpointIndex};};\nwindow.__sample=()=>({time:state.time,progress:state.progress,ratio:renderer.getPixelRatio(),shadows:renderer.shadowMap.enabled,calls:renderer.info.render.calls,triangles:renderer.info.render.triangles,checkpoint:state.checkpointIndex,finished:state.finished,previewRunning:prevAnimId!==null,...window.__perf});`});
+    return route.fulfill({contentType:'text/javascript',body:'window.__perf={main:0,preview:0};\n'+source+`\nwindow.__driveRace=()=>{input.action=true;let ticks=0;for(;ticks<12000&&!state.finished;ticks++){input.left=state.lateral>0.5;input.right=state.lateral< -0.5;simulate(1/60);}releaseInput();return {ticks,progress:state.progress,finished:state.finished,checkpoints:state.checkpointIndex};};\nwindow.__rampView=()=>{applyLevel(CONFIG.levels.find(l=>l.rampCount>0).key);input.action=true;let ticks=0;for(;ticks<2000&&state.progress<world.ramps[0].t-0.008;ticks++){input.left=state.lateral>world.ramps[0].lateral+0.3;input.right=state.lateral<world.ramps[0].lateral-0.3;simulate(1/60);}releaseInput();syncNativeAppearance();renderer.render(scene,camera);return {ticks,progress:state.progress,ramp:world.ramps[0].t};};\nwindow.__sample=()=>({time:state.time,progress:state.progress,ratio:renderer.getPixelRatio(),shadows:renderer.shadowMap.enabled,calls:renderer.info.render.calls,triangles:renderer.info.render.triangles,checkpoint:state.checkpointIndex,finished:state.finished,previewRunning:prevAnimId!==null,...window.__perf});`});
   });
   const sample=()=>page.evaluate(()=>window.__sample());
   await page.goto('/');await solveGate(page);
@@ -59,6 +59,12 @@ test('hidden work stops; racing, selectors and optional light quality remain usa
     await expect(page.locator('family-v2-shell #adults')).toBeInViewport();
     await expect(page.locator('[data-control="action"]')).toBeInViewport();
     await page.screenshot({path:test.info().outputPath(`normal-${viewport.width}x${viewport.height}.png`)});
+    for (const theme of ['light','dark']) {
+      await page.locator('family-v2-shell #theme').selectOption(theme);
+      await page.waitForTimeout(80);
+      await page.screenshot({path:test.info().outputPath(`${theme}-${viewport.width}x${viewport.height}.png`)});
+    }
+    await page.locator('family-v2-shell #theme').selectOption('light');
   }
   await page.setViewportSize({width:1280,height:800});
   await setting(page, '#quality-toggle');
@@ -74,5 +80,13 @@ test('hidden work stops; racing, selectors and optional light quality remain usa
   await expect(page.locator('#quality-toggle')).toHaveAttribute('aria-pressed','false');
   expect((await sample()).ratio).toBe(1);
   expect(await page.evaluate(()=>localStorage.getItem('selectedCharacter'))).toBe(selectedCharacter);
+  await page.locator('#title-play').click();
+  await expect(page.locator('#countdown-overlay')).toHaveClass(/hidden/,{timeout:7000});
+  console.log('Ramp approach with native input:',JSON.stringify(await page.evaluate(()=>__rampView())));
+  for (const theme of ['light','dark']) {
+    await page.locator('family-v2-shell #theme').selectOption(theme);
+    await page.waitForTimeout(80);
+    await page.screenshot({path:test.info().outputPath(`ramp-${theme}.png`)});
+  }
   expect(errors).toEqual([]);
 });

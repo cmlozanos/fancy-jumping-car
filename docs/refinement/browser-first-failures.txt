@@ -1,0 +1,199 @@
+
+> fancy-jumping-car-checks@2.0.0 test
+> playwright test --output=docs/refinement/browser-results
+
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:51:59] "GET / HTTP/1.1" 200 -
+
+Running 2 tests using 1 worker
+
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:01] "GET / HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:01] "GET /family-v2/family.css?v=2.0.0 HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:01] "GET /styles.css?v=2.0.0 HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:01] "GET /learning-profile.js?v=20260928-4 HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:01] "GET /reading-words.js?v=20260928-1 HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:01] "GET /learning-gate.js?v=20260928-4 HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:01] "GET /family-v2/family.js?v=2.0.0 HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:01] "GET /src/main.js?v=2.0.0 HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:01] "GET /family-v2/playwrite-es.ttf HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:01] "GET /vendor/three.module.js HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:01] "GET /src/physics.js HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:01] "GET /src/portraits.js HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:01] "GET /vendor/addons/loaders/GLTFLoader.js HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:01] "GET /src/constants.js HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:01] "GET /sw.js HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:01] "GET /src/physics/carPhysics.js HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:01] "GET /index.html HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:01] "GET /src/physics/worldPhysics.js HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:01] "GET /src/performance.js?v=20260925-4 HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:01] "GET /vendor/addons/utils/BufferGeometryUtils.js HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:01] "GET /READING_ASSETS.md HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:01] "GET /family-v2/OFL.txt HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:01] "GET /READING_WORDS.md HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:01] "GET /assets/models/Rock.glb HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:01] "GET /assets/models/Rock_2.glb HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:01] "GET /assets/models/Rock_3.glb HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:01] "GET /assets/models/Tree_2.glb HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:01] "GET /assets/models/Tree_3.glb HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:01] "GET /reading-images/25900.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:01] "GET /assets/models/Tree.glb HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:01] "GET /reading-images/3129.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:01] "GET /reading-images/manifest.json HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:01] "GET /reading-images/2928.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:01] "GET /reading-images/2317.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:01] "GET /reading-images/2933.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:01] "GET /reading-images/28479.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:01] "GET /reading-images/7114.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:01] "GET /reading-images/2609.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:01] "GET /reading-images/2397.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:01] "GET /reading-images/2488.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:01] "GET /reading-images/3247.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:01] "GET /reading-images/2561.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:01] "GET /reading-images/2525.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:01] "GET /reading-images/10224.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:01] "GET /reading-images/2641.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/2582.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/6573.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/2610.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/2494.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/2798.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/8299.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/2731.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/34543.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/9927.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/2663.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/7166.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/25479.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/6060.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/5980.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/7173.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/3298.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/2883.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/5892.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/28473.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/2595.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/2821.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/2509.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/2489.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/24823.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/7202.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/2291.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/2404.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/2533.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/3155.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/8153.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/2339.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/2427.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/2520.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/2887.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/2541.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/2603.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/7104.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/3057.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/23849.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/2391.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/6932.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/2412.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/25191.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/7054.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/25187.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/2469.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/2433.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/3022.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/8094.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/2408.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/2668.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/2264.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/2871.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/2277.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/2269.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/6208.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/2521.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/34363.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/2440.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/2409.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/2815.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/2532.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/2549.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/2852.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/5077.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/6242.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/2445.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/25576.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/11461.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/2573.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/39387.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/2955.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/8652.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/2527.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/25488.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/7128.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/4654.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/2477.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/3135.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/2400.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/2590.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/3379.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/38275.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/8349.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /reading-images/3075.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /manifest.webmanifest HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /icon-192.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /icon.svg HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /assets/sprites/ui_button_left.svg HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /icon-512.png HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /assets/sprites/ui_button_right.svg HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:02] "GET /assets/sprites/ui_button_action.svg HTTP/1.1" 200 -
+  ✓  1 tests/compatibility.spec.cjs:5:1 › touch start, countdown freeze, home, sound off and offline gate (11.5s)
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:12] "GET / HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:12] "GET /styles.css?v=2.0.0 HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:12] "GET /family-v2/family.css?v=2.0.0 HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:12] "GET /learning-gate.js?v=20260928-4 HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:12] "GET /learning-profile.js?v=20260928-4 HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:12] "GET /reading-words.js?v=20260928-1 HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:12] "GET /family-v2/family.js?v=2.0.0 HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:12] "GET /family-v2/playwrite-es.ttf HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:12] "GET /vendor/addons/loaders/GLTFLoader.js HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:12] "GET /vendor/three.module.js HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:12] "GET /src/physics.js HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:12] "GET /src/portraits.js HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:12] "GET /src/performance.js?v=20260925-4 HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:12] "GET /src/constants.js HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:12] "GET /src/physics/worldPhysics.js HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:12] "GET /src/physics/carPhysics.js HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:12] "GET /vendor/addons/utils/BufferGeometryUtils.js HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:12] "GET /assets/models/Rock.glb HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:12] "GET /assets/models/Rock_2.glb HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:12] "GET /assets/models/Rock_3.glb HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:12] "GET /assets/models/Tree.glb HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:12] "GET /assets/models/Tree_2.glb HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:12] "GET /assets/models/Tree_3.glb HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:13] "GET /assets/sprites/ui_button_left.svg HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:13] "GET /assets/sprites/ui_button_right.svg HTTP/1.1" 200 -
+[WebServer] 127.0.0.1 - - [23/Nov/2026 19:52:13] "GET /assets/sprites/ui_button_action.svg HTTP/1.1" 200 -
+Full actual kart race: {"ticks":1313,"progress":1,"finished":true,"checkpoints":3}
+(node:44026) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  2 tests/performance.spec.cjs:7:1 › hidden work stops; racing, selectors and optional light quality remain usable (17.5s)
+
+
+  1) tests/performance.spec.cjs:7:1 › hidden work stops; racing, selectors and optional light quality remain usable
+
+    Error: expect(received).toBeGreaterThanOrEqual(expected)
+
+    Expected: >= 69
+    Received:    68
+
+      54 |     await page.setViewportSize(viewport);
+      55 |     const nav=await page.locator('[data-family-slot]').boundingBox(),hud=await page.locator('#hud').boundingBox();
+    > 56 |     expect(hud.y).toBeGreaterThanOrEqual(nav.y+nav.height);
+         |                   ^
+      57 |     const action=await page.locator('[data-control="action"]').boundingBox();
+      58 |     expect(hud.y+hud.height).toBeLessThan(action.y);
+      59 |     await expect(page.locator('family-v2-shell #adults')).toBeInViewport();
+        at /Users/carlos.lozanosoto/personal/repositories/fancy-jumping-car/tests/performance.spec.cjs:56:19
+
+    Error Context: docs/refinement/browser-results/performance-hidden-work-st-c2e87-light-quality-remain-usable/error-context.md
+
+  1 failed
+    tests/performance.spec.cjs:7:1 › hidden work stops; racing, selectors and optional light quality remain usable
+  1 passed (37.1s)

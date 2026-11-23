@@ -17,7 +17,7 @@
 
 * {
   box-sizing: border-box;
-  font-family: "Press Start 2P", monospace;
+  font-family: "Family School";
   -webkit-user-select: none;
   -moz-user-select: none;
   user-select: none;
@@ -816,7 +816,7 @@ html.family-v2 #vehicle-menu { max-height: calc(var(--family-height, 100vh) - 80
 html.family-v2 .vehicle-card { background: var(--family-button); color: var(--family-ink); border: 0; font-size: 14px; }
 html.family-v2 .vehicle-card.active { outline: 3px solid var(--accent-2); outline-offset: -3px; }
 html.family-v2 button { font-size: max(14px, 1em); }
-html.family-v2 #hud { top: 68px; }
+html.family-v2 #hud { top: 74px; }
 html.family-v2 #level-menu { max-height: calc(var(--family-height, 100vh) - 80px); overflow-y: auto; }
 @media (max-width: 580px) {
   html.family-v2 .vehicle-selector-layout { overflow: auto; }
@@ -828,3 +828,6 @@ html.family-v2 #level-menu { max-height: calc(var(--family-height, 100vh) - 80px
   html.family-v2 #hud .hud-row { display: none; }
 }
 html.family-v2 [data-family-setting] { display: grid; place-items: center; border: 0; border-radius: 12px; padding: 8px; background: var(--family-button); color: var(--family-ink); font-size: 24px; }
+
+/* The translucent race panel stays dark in both scene themes. */
+html.family-v2 #hud, html.family-v2 #hud .hud-item { color: #f3f6fc; }
