@@ -14,3 +14,6 @@ html.family-v2 [data-family-setting] { font-family:var(--family-font)!important;
 html.family-v2 .family-native-panel { background:var(--family-panel);color:var(--family-ink); }
 /* Shared educational overlays must not fall back to a different school hand. */
 html.family-v2 #learning-gate,html.family-v2 #learning-gate button,html.family-v2 #learning-gate input{font-family:var(--family-font)!important;font-synthesis:none}
+
+/* Keep native IDs/listeners intact; the shell owns Home only while mounted. */
+html.family-v2.family-shell-mounted [data-family-home]{display:none!important}
